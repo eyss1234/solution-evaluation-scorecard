@@ -32,29 +32,67 @@ export default async function StopPage({ params }: StopPageProps) {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="max-w-2xl mx-auto">
-        <Card>
-          <div className="text-center space-y-6">
-            <div className="text-6xl">🛑</div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              No Scorecard Needed
-            </h1>
-            <p className="text-lg text-gray-600">
-              Based on your answers, a solution evaluation scorecard is not necessary at this time.
-            </p>
+    <main className="min-h-screen py-12 px-4">
+      <div className="max-w-3xl mx-auto">
+        <Card className="text-center">
+          <div className="space-y-6">
+            {/* Icon */}
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 mb-2">
+              <svg className="w-10 h-10 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+              </svg>
+            </div>
 
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
+                Scorecard Not Required
+              </h1>
+              <p className="text-lg text-gray-600 max-w-xl mx-auto">
+                Based on your responses, a formal solution evaluation scorecard is not necessary for this project at this time.
+              </p>
+            </div>
+
+            {/* Summary Stats */}
+            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border border-gray-200">
+              <div className="grid grid-cols-2 gap-4 text-center">
+                <div>
+                  <div className="text-3xl font-bold text-gray-900">{run.answers.length}</div>
+                  <div className="text-sm text-gray-600 mt-1">Questions</div>
+                </div>
+                <div>
+                  <div className="text-3xl font-bold text-red-600">
+                    {run.answers.filter(a => !a.value).length}
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">No Responses</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Answers */}
             <div className="pt-6 border-t border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                Your Answers
+              <h2 className="text-xl font-semibold text-gray-900 mb-6 text-left">
+                Your Responses
               </h2>
-              <div className="space-y-3 text-left">
+              <div className="space-y-3">
                 {run.answers.map((answer) => (
-                  <div key={answer.id} className="flex justify-between items-start">
-                    <span className="text-gray-700 flex-1">
+                  <div key={answer.id} className="flex items-start gap-3 text-left bg-gray-50 rounded-lg p-4 border border-gray-100">
+                    <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
+                      answer.value ? 'bg-green-100' : 'bg-red-100'
+                    }`}>
+                      {answer.value ? (
+                        <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      ) : (
+                        <svg className="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </div>
+                    <span className="text-gray-700 flex-1 text-sm">
                       {answer.question.text}
                     </span>
-                    <span className={`font-medium ml-4 ${answer.value ? 'text-green-600' : 'text-red-600'}`}>
+                    <span className={`font-semibold text-sm ${answer.value ? 'text-green-600' : 'text-red-600'}`}>
                       {answer.value ? 'Yes' : 'No'}
                     </span>
                   </div>
@@ -62,9 +100,10 @@ export default async function StopPage({ params }: StopPageProps) {
               </div>
             </div>
 
-            <div className="pt-6">
+            {/* Actions */}
+            <div className="pt-6 flex gap-3 justify-center">
               <Link href="/">
-                <Button variant="primary">Start Over</Button>
+                <Button variant="primary">Start New Evaluation</Button>
               </Link>
             </div>
           </div>

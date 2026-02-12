@@ -13,16 +13,48 @@ async function main() {
   // Seed gate questions
   const questions = [
     {
-      text: 'Do you need to evaluate multiple solution options?',
+      text: 'Does the solution directly enable or advance a strategic initiative?',
       order: 1,
     },
     {
-      text: 'Are there specific criteria you need to compare?',
+      text: 'Will the solution replace, retire, or consolidate multiple existing applications?',
       order: 2,
     },
     {
-      text: 'Do you need to make a data-driven decision?',
+      text: 'Will capital expenditure exceed £150k across the next three years?',
       order: 3,
+    },
+    {
+      text: 'Will the solution handle personal or sensitive data, or introduce regulatory considerations?',
+      order: 4,
+    },
+    {
+      text: 'Will the solution integrate with business‑critical systems containing financial, operational, or confidential information?',
+      order: 5,
+    },
+    {
+      text: 'Would a failure of the solution result in material impact (e.g., operational disruption, reputational damage, or financial loss)?',
+      order: 6,
+    },
+    {
+      text: 'Will the solution require significant internal resources (e.g., BAs, developers, SMEs) to deliver or maintain?',
+      order: 7,
+    },
+    {
+      text: 'Is the long‑term maintainability uncertain (e.g., vendor sustainability, support challenges, reliance on niche skills)?',
+      order: 8,
+    },
+    {
+      text: 'Does the solution risk generating technical debt or duplicating existing capabilities?',
+      order: 9,
+    },
+    {
+      text: 'Will the solution impact more than 50 users, an entire department, or core business‑critical processes?',
+      order: 10,
+    },
+    {
+      text: 'Would a structured evaluation or scorecard help validate the decision?',
+      order: 11,
     },
   ];
 
