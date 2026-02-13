@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/db';
 import { GatingForm } from '@/components/GatingForm';
 
+export const dynamic = 'force-dynamic';
+
 export default async function HomePage() {
   const questions = await prisma.gateQuestion.findMany({
     orderBy: {
