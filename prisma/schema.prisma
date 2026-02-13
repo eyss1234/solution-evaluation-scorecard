@@ -25,7 +25,8 @@ model GatingRun {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
 
-  answers GatingAnswer[]
+  answers      GatingAnswer[]
+  scorecardRun ScorecardRun?
 
   @@map("gating_runs")
 }
@@ -42,4 +43,42 @@ model GatingAnswer {
 
   @@unique([runId, questionId])
   @@map("gating_answers")
+}
+
+model ScorecardQuestion {
+  id         String   @id @default(cuid())
+  text       String
+  stepNumber Int
+  order      Int
+  createdAt  DateTime @default(now())
+
+  scores ScorecardScore[]
+
+  @@unique([stepNumber, order])
+  @@map("scorecard_questions")
+}
+
+model ScorecardRun {
+  id          String   @id @default(cuid())
+  gatingRunId String   @unique
+  createdAt   DateTime @default(now())
+
+  gatingRun GatingRun        @relation(fields: [gatingRunId], references: [id], onDelete: Cascade)
+  scores    ScorecardScore[]
+
+  @@map("scorecard_runs")
+}
+
+model ScorecardScore {
+  id         String   @id @default(cuid())
+  runId      String
+  questionId String
+  value      Int      // 0-5 scale
+  createdAt  DateTime @default(now())
+
+  run      ScorecardRun      @relation(fields: [runId], references: [id], onDelete: Cascade)
+  question ScorecardQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, questionId])
+  @@map("scorecard_scores")
 }

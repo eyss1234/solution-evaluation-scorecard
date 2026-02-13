@@ -3,6 +3,16 @@ import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
+import { STEPS } from '@/lib/steps';
+
+const SCALE_LABELS: Record<number, string> = {
+  0: 'N/A',
+  1: 'Very Poor',
+  2: 'Poor',
+  3: 'Adequate',
+  4: 'Good',
+  5: 'Excellent',
+};
 
 interface ScorecardPageProps {
   params: Promise<{ runId: string }>;
@@ -15,12 +25,14 @@ export default async function ScorecardPage({ params }: ScorecardPageProps) {
     where: { id: runId },
     include: {
       answers: {
+        include: { question: true },
+        orderBy: { question: { order: 'asc' } },
+      },
+      scorecardRun: {
         include: {
-          question: true,
-        },
-        orderBy: {
-          question: {
-            order: 'asc',
+          scores: {
+            include: { question: true },
+            orderBy: [{ question: { stepNumber: 'asc' } }, { question: { order: 'asc' } }],
           },
         },
       },
@@ -31,134 +43,136 @@ export default async function ScorecardPage({ params }: ScorecardPageProps) {
     notFound();
   }
 
-  const answeredYes = run.answers.filter((a) => a.value).length;
+  const scorecardRun = run.scorecardRun;
+  const hasScorecard = scorecardRun && scorecardRun.scores.length > 0;
+
+  // Scorecard stats
+  const allScores = hasScorecard ? scorecardRun.scores.map((s) => s.value) : [];
+  const nonZeroScores = allScores.filter((v) => v > 0);
+  const avgScore = nonZeroScores.length > 0
+    ? (nonZeroScores.reduce((a, b) => a + b, 0) / nonZeroScores.length).toFixed(1)
+    : '0.0';
 
   return (
-    <main className="min-h-screen py-12 px-4">
-      <div className="max-w-3xl mx-auto">
+    <main className="min-h-screen bg-zinc-50 py-12 px-4">
+      <div className="max-w-3xl mx-auto space-y-8">
+        {/* Header */}
         <Card className="text-center">
           <div className="space-y-6">
-            {/* Icon */}
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-green-100 to-emerald-200 mb-2">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-50 mb-2">
               <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
 
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
-                Scorecard Recommended
+              <h1 className="text-3xl sm:text-4xl font-bold text-zinc-900 mb-3">
+                {hasScorecard ? 'Evaluation Complete' : 'Scorecard Recommended'}
               </h1>
-              <p className="text-lg text-gray-600 max-w-xl mx-auto">
-                Based on your responses, a structured solution evaluation scorecard is recommended for this project.
+              <p className="text-lg text-zinc-500 max-w-xl mx-auto">
+                {hasScorecard
+                  ? 'Your scorecard evaluation has been submitted successfully.'
+                  : 'Based on your responses, a structured scorecard evaluation is recommended.'}
               </p>
             </div>
 
             {/* Summary Stats */}
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div>
-                  <div className="text-3xl font-bold text-gray-900">{run.answers.length}</div>
-                  <div className="text-sm text-gray-600 mt-1">Questions</div>
-                </div>
-                <div>
-                  <div className="text-3xl font-bold text-green-600">{answeredYes}</div>
-                  <div className="text-sm text-gray-600 mt-1">Yes Responses</div>
-                </div>
-                <div>
-                  <div className="text-3xl font-bold text-blue-600">
-                    {Math.round((answeredYes / run.answers.length) * 100)}%
+            {hasScorecard && (
+              <div className="bg-zinc-50 rounded-2xl p-6 border border-zinc-100">
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div>
+                    <div className="text-3xl font-bold text-zinc-900">{scorecardRun.scores.length}</div>
+                    <div className="text-sm text-zinc-500 mt-1">Scored</div>
                   </div>
-                  <div className="text-sm text-gray-600 mt-1">Match Score</div>
+                  <div>
+                    <div className="text-3xl font-bold text-indigo-600">{avgScore}</div>
+                    <div className="text-sm text-zinc-500 mt-1">Avg Score</div>
+                  </div>
+                  <div>
+                    <div className="text-3xl font-bold text-zinc-900">{STEPS.length}</div>
+                    <div className="text-sm text-zinc-500 mt-1">Steps</div>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
+          </div>
+        </Card>
 
-            {/* Answers */}
-            <div className="pt-6 border-t border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6 text-left">
-                Your Responses
-              </h2>
+        {/* Scorecard Scores by Step */}
+        {hasScorecard && STEPS.map((step) => {
+          const stepScores = scorecardRun.scores.filter((s) => s.question.stepNumber === step.number);
+          if (stepScores.length === 0) return null;
+
+          const stepAvg = stepScores.filter((s) => s.value > 0).length > 0
+            ? (stepScores.filter((s) => s.value > 0).reduce((a, s) => a + s.value, 0) / stepScores.filter((s) => s.value > 0).length).toFixed(1)
+            : '0.0';
+
+          return (
+            <Card key={step.number}>
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <p className="text-sm uppercase tracking-wide text-zinc-500 font-medium">
+                    Step {step.number}
+                  </p>
+                  <h2 className="text-lg font-semibold text-zinc-900 mt-0.5">{step.name}</h2>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-indigo-600">{stepAvg}</div>
+                  <div className="text-xs text-zinc-500">avg</div>
+                </div>
+              </div>
               <div className="space-y-3">
-                {run.answers.map((answer) => (
-                  <div key={answer.id} className="flex items-start gap-3 text-left bg-gray-50 rounded-lg p-4 border border-gray-100">
-                    <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
-                      answer.value ? 'bg-green-100' : 'bg-red-100'
-                    }`}>
-                      {answer.value ? (
-                        <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      ) : (
-                        <svg className="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </div>
-                    <span className="text-gray-700 flex-1 text-sm">
-                      {answer.question.text}
+                {stepScores.map((score) => (
+                  <div key={score.id} className="flex items-start gap-3 text-sm">
+                    <span className={`flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold ${getScoreBadgeStyle(score.value)}`}>
+                      {score.value}
                     </span>
-                    <span className={`font-semibold text-sm ${answer.value ? 'text-green-600' : 'text-red-600'}`}>
-                      {answer.value ? 'Yes' : 'No'}
+                    <span className="text-zinc-700 flex-1">{score.question.text}</span>
+                    <span className={`font-medium flex-shrink-0 text-xs ${getScoreTextStyle(score.value)}`}>
+                      {SCALE_LABELS[score.value]}
                     </span>
                   </div>
                 ))}
               </div>
-            </div>
+            </Card>
+          );
+        })}
 
-            {/* Next Steps */}
-            <div className="pt-6 border-t border-gray-200">
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100 text-left">
-                <h3 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                  </svg>
-                  Next Steps
-                </h3>
-                <p className="text-blue-800 mb-4">
-                  A comprehensive scorecard evaluation will help you:
-                </p>
-                <ul className="space-y-2 text-blue-800">
-                  <li className="flex items-start gap-2">
-                    <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span>Define and weight evaluation criteria</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span>Compare multiple solution options objectively</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span>Generate data-driven recommendations</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span>Document decision rationale for stakeholders</span>
-                  </li>
-                </ul>
-                <p className="text-sm text-blue-700 mt-4 italic">
-                  Full scorecard functionality coming in next iteration
-                </p>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="pt-6 flex gap-3 justify-center">
-              <Link href="/">
-                <Button variant="secondary">Start New Evaluation</Button>
+        {/* If no scorecard yet, show CTA to start */}
+        {!hasScorecard && (
+          <Card>
+            <div className="text-center space-y-4">
+              <p className="text-zinc-600">
+                Continue to the scorecard evaluation to score your solution across {STEPS.length} categories.
+              </p>
+              <Link href={`/scorecard/${runId}/step/1`}>
+                <Button>Start Scorecard</Button>
               </Link>
             </div>
-          </div>
-        </Card>
+          </Card>
+        )}
+
+        {/* Actions */}
+        <div className="flex gap-3 justify-center">
+          <Link href="/">
+            <Button variant="secondary">Start New Evaluation</Button>
+          </Link>
+        </div>
       </div>
     </main>
   );
+}
+
+function getScoreBadgeStyle(value: number): string {
+  if (value === 0) return 'bg-zinc-100 text-zinc-600';
+  if (value <= 2) return 'bg-red-50 text-red-700';
+  if (value === 3) return 'bg-amber-50 text-amber-700';
+  return 'bg-green-50 text-green-700';
+}
+
+function getScoreTextStyle(value: number): string {
+  if (value === 0) return 'text-zinc-500';
+  if (value <= 2) return 'text-red-500';
+  if (value === 3) return 'text-amber-600';
+  return 'text-green-600';
 }
