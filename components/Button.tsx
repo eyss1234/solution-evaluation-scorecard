@@ -10,10 +10,10 @@ export function Button({
   className = '', 
   ...props 
 }: ButtonProps) {
-  const baseStyles = 'px-6 py-3 rounded-xl font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2';
+  const baseStyles = 'px-6 py-3 rounded-xl font-semibold transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2';
   const variantStyles = {
-    primary: 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl focus:ring-blue-500 transform hover:scale-[1.02]',
-    secondary: 'bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 shadow-sm hover:shadow-md focus:ring-gray-400',
+    primary: 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm focus:ring-indigo-500',
+    secondary: 'bg-white text-zinc-700 border-2 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 shadow-sm focus:ring-zinc-400',
   };
 
   return (

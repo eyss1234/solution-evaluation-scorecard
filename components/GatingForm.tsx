@@ -63,7 +63,7 @@ export function GatingForm({ questions }: GatingFormProps) {
 
       // Redirect based on evaluation
       if (data.data.shouldProceed) {
-        router.push(`/scorecard/${data.data.runId}`);
+        router.push(`/scorecard/${data.data.runId}/step/1`);
       } else {
         router.push(`/stop/${data.data.runId}`);
       }
@@ -79,16 +79,16 @@ export function GatingForm({ questions }: GatingFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Progress indicator */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-100 p-4">
+      <div className="bg-white rounded-2xl shadow-sm border border-zinc-100 p-4">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-gray-700">Progress</span>
-          <span className="text-sm font-semibold text-blue-600">
+          <span className="text-sm font-medium text-zinc-700">Progress</span>
+          <span className="text-sm font-semibold text-indigo-600">
             {answeredCount} / {questions.length}
           </span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+        <div className="w-full bg-zinc-200 rounded-full h-2 overflow-hidden">
           <div
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 h-2 rounded-full transition-all duration-300"
+            className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -98,18 +98,18 @@ export function GatingForm({ questions }: GatingFormProps) {
         <Card key={question.id}>
           <div className="space-y-4">
             <div className="flex items-start gap-3">
-              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-700 font-semibold flex items-center justify-center text-sm">
+              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-50 text-indigo-700 font-semibold flex items-center justify-center text-sm">
                 {index + 1}
               </span>
-              <h3 className="text-base font-medium text-gray-900 leading-relaxed flex-1">
+              <h3 className="text-xl font-medium text-zinc-900 leading-relaxed flex-1">
                 {question.text}
               </h3>
             </div>
             <div className="flex gap-3 ml-11">
               <label className={`flex-1 flex items-center justify-center gap-2 cursor-pointer px-4 py-3 rounded-xl border-2 transition-all duration-200 ${
                 answers[question.id] === true
-                  ? 'border-green-500 bg-green-50 text-green-700 shadow-sm'
-                  : 'border-gray-200 bg-white hover:border-gray-300 text-gray-700'
+                  ? 'border-green-300 bg-green-50 text-green-700 shadow-sm'
+                  : 'border-zinc-200 bg-white hover:border-zinc-300 text-zinc-700'
               }`}>
                 <input
                   type="radio"
@@ -126,8 +126,8 @@ export function GatingForm({ questions }: GatingFormProps) {
               </label>
               <label className={`flex-1 flex items-center justify-center gap-2 cursor-pointer px-4 py-3 rounded-xl border-2 transition-all duration-200 ${
                 answers[question.id] === false
-                  ? 'border-red-500 bg-red-50 text-red-700 shadow-sm'
-                  : 'border-gray-200 bg-white hover:border-gray-300 text-gray-700'
+                  ? 'border-red-200 bg-red-50 text-red-600 shadow-sm'
+                  : 'border-zinc-200 bg-white hover:border-zinc-300 text-zinc-700'
               }`}>
                 <input
                   type="radio"
@@ -148,7 +148,7 @@ export function GatingForm({ questions }: GatingFormProps) {
       ))}
 
       {error && (
-        <div className="bg-red-50 border-2 border-red-200 text-red-700 px-5 py-4 rounded-xl flex items-start gap-3">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-xl flex items-start gap-3">
           <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
           </svg>

@@ -25,7 +25,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(to bottom right, #f8fafc, #f1f5f9);
+  background-color: #fafafa; /* zinc-50 */
   min-height: 100vh;
 }
 
