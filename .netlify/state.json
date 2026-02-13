@@ -1,0 +1,20 @@
+{
+	"geolocation": {
+		"data": {
+			"city": "Manor Park",
+			"country": {
+				"code": "GB",
+				"name": "United Kingdom"
+			},
+			"subdivision": {
+				"code": "ENG",
+				"name": "England"
+			},
+			"timezone": "Europe/London",
+			"latitude": 51.5539,
+			"longitude": 0.0487,
+			"postalCode": "E12"
+		},
+		"timestamp": 1770998941692
+	}
+}
