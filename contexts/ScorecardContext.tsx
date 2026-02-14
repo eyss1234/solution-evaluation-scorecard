@@ -19,6 +19,7 @@ interface ScorecardContextValue {
   isStepComplete: (stepNumber: number) => boolean;
   isStepPartiallyComplete: (stepNumber: number) => boolean;
   getStepQuestions: (stepNumber: number) => ScorecardQuestion[];
+  getStepScore: (stepNumber: number) => number | null;
   totalSteps: number;
   runId: string;
 }
@@ -66,6 +67,33 @@ export function ScorecardProvider({
     [getStepQuestions, scores]
   );
 
+  const getStepScore = useCallback(
+    (stepNumber: number): number | null => {
+      const stepQuestions = getStepQuestions(stepNumber);
+      if (stepQuestions.length === 0 || !isStepComplete(stepNumber)) {
+        return null;
+      }
+
+      // Calculate weighted average for the section
+      let totalWeightedScore = 0;
+      let totalWeight = 0;
+
+      for (const question of stepQuestions) {
+        const score = scores[question.id];
+        if (score !== undefined) {
+          // Normalize score to 0-1 range, then multiply by question weight
+          const normalizedScore = score / 5;
+          totalWeightedScore += normalizedScore * question.weight;
+          totalWeight += question.weight;
+        }
+      }
+
+      // Return section score as percentage (0-100)
+      return totalWeight > 0 ? (totalWeightedScore / totalWeight) * 100 : 0;
+    },
+    [getStepQuestions, scores, isStepComplete]
+  );
+
   return (
     <ScorecardContext.Provider
       value={{
@@ -75,6 +103,7 @@ export function ScorecardProvider({
         isStepComplete,
         isStepPartiallyComplete,
         getStepQuestions,
+        getStepScore,
         totalSteps: TOTAL_STEPS,
         runId,
       }}

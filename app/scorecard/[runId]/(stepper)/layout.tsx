@@ -54,7 +54,7 @@ export default async function StepperLayout({ children, params }: StepperLayoutP
   console.log('[Layout] Loading scorecard:', { runId, scoresCount: existingScores.length, initialScores });
 
   return (
-    <ScorecardShell questions={questions} runId={runId} initialScores={initialScores}>
+    <ScorecardShell questions={questions} runId={runId} projectId={scorecardRun.projectId} initialScores={initialScores}>
       {children}
     </ScorecardShell>
   );

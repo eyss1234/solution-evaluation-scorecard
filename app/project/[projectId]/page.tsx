@@ -10,7 +10,7 @@ import { ScorecardComparison } from '@/components/ScorecardComparison';
 import { STEPS } from '@/lib/steps';
 import { EditProjectName } from '@/components/EditProjectName';
 import { DeleteProjectButton } from '@/components/DeleteProjectButton';
-import { ScorecardActions } from '@/components/ScorecardActions';
+import { ScorecardItem } from '@/components/ScorecardItem';
 
 interface ProjectPageProps {
   params: Promise<{ projectId: string }>;
@@ -192,25 +192,19 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               </div>
             ) : (
               <div className="space-y-3">
-                {project.scorecardRuns.map((run: { id: string; name: string | null; scores: unknown[]; createdAt: Date }, index: number) => (
-                  <div key={run.id} className="p-4 rounded-xl border border-zinc-200">
-                    <ScorecardActions 
-                      runId={run.id} 
-                      currentName={run.name} 
-                      createdAt={run.createdAt}
-                      fallbackName={`Scorecard #${project.scorecardRuns.length - index}`}
+                {project.scorecardRuns.map((run: { id: string; name: string | null; scores: unknown[]; createdAt: Date }, index: number) => {
+                  const runComparison = comparisonData.runs.find(r => r.runId === run.id);
+                  
+                  return (
+                    <ScorecardItem
+                      key={run.id}
+                      run={run}
+                      runComparison={runComparison}
+                      index={index}
+                      totalScorecards={project.scorecardRuns.length}
                     />
-                    <p className="text-sm text-zinc-500 mt-1">
-                      {run.scores.length > 0 ? `${run.scores.length} questions answered` : 'Not started'} • {formatDate(run.createdAt)}
-                    </p>
-                    <Link href={`/scorecard/${run.id}/step/1`} className="inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-700 font-medium mt-2">
-                      View scorecard
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </Link>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </Card>
