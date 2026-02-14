@@ -29,7 +29,10 @@ function DropdownMenu({ onEdit, onDelete }: DropdownMenuProps) {
   return (
     <div className="relative" ref={menuRef}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen(!isOpen);
+        }}
         className="p-1 hover:bg-zinc-100 rounded transition-colors"
         aria-label="More options"
       >
@@ -41,7 +44,8 @@ function DropdownMenu({ onEdit, onDelete }: DropdownMenuProps) {
       {isOpen && (
         <div className="absolute right-0 mt-1 w-40 bg-white rounded-lg shadow-lg border border-zinc-200 py-1 z-10">
           <button
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               onEdit();
               setIsOpen(false);
             }}
@@ -50,7 +54,8 @@ function DropdownMenu({ onEdit, onDelete }: DropdownMenuProps) {
             Edit name
           </button>
           <button
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               onDelete();
               setIsOpen(false);
             }}
@@ -64,21 +69,27 @@ function DropdownMenu({ onEdit, onDelete }: DropdownMenuProps) {
   );
 }
 
-interface ScorecardActionsProps {
+interface ScorecardTitleProps {
   runId: string;
   currentName: string | null;
   createdAt: Date;
   fallbackName: string;
+  triggerEdit?: boolean;
 }
 
-export function ScorecardActions({ runId, currentName, createdAt, fallbackName }: ScorecardActionsProps) {
+export function ScorecardTitle({ runId, currentName, createdAt, fallbackName, triggerEdit }: ScorecardTitleProps) {
   const [isEditingName, setIsEditingName] = useState(false);
   const [name, setName] = useState(currentName || '');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    if (triggerEdit === true) {
+      setIsEditingName(true);
+    }
+  }, [triggerEdit]);
 
   useEffect(() => {
     if (isEditingName && inputRef.current) {
@@ -137,6 +148,43 @@ export function ScorecardActions({ runId, currentName, createdAt, fallbackName }
     }
   };
 
+  const displayName = currentName || fallbackName;
+
+  return (
+    <>
+      {isEditingName ? (
+        <div className="flex-1" onClick={(e) => e.stopPropagation()}>
+          <input
+            ref={inputRef}
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onBlur={handleSaveName}
+            onClick={(e) => e.stopPropagation()}
+            className="font-semibold text-zinc-900 border-2 border-indigo-500 rounded px-2 py-1 text-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full"
+            disabled={isLoading}
+          />
+          {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
+        </div>
+      ) : (
+        <p className="font-semibold text-zinc-900 text-lg">{displayName}</p>
+      )}
+    </>
+  );
+}
+
+interface ScorecardActionsProps {
+  runId: string;
+  onEdit: () => void;
+  onDelete: () => void;
+}
+
+export function ScorecardActions({ runId, onEdit, onDelete }: ScorecardActionsProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const router = useRouter();
+
   const handleDelete = async () => {
     setIsLoading(true);
 
@@ -160,35 +208,12 @@ export function ScorecardActions({ runId, currentName, createdAt, fallbackName }
     }
   };
 
-  const displayName = currentName || fallbackName;
-
   return (
     <>
-      <div className="flex items-center justify-between mt-2">
-        {isEditingName ? (
-          <div className="flex-1">
-            <input
-              ref={inputRef}
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={handleKeyDown}
-              onBlur={handleSaveName}
-              className="font-medium text-zinc-900 border-2 border-indigo-500 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full"
-              disabled={isLoading}
-            />
-            {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
-          </div>
-        ) : (
-          <>
-            <p className="font-medium text-zinc-900">{displayName}</p>
-            <DropdownMenu
-              onEdit={() => setIsEditingName(true)}
-              onDelete={() => setShowDeleteConfirm(true)}
-            />
-          </>
-        )}
-      </div>
+      <DropdownMenu
+        onEdit={onEdit}
+        onDelete={() => setShowDeleteConfirm(true)}
+      />
 
       <ConfirmModal
         isOpen={showDeleteConfirm}

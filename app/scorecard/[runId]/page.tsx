@@ -186,10 +186,10 @@ export default async function ScorecardPage({ params }: ScorecardPageProps) {
         {/* Actions */}
         <div className="flex gap-3 justify-center">
           <Link 
-            href="/"
+            href={hasScorecard ? `/project/${scorecardRun.projectId}` : "/"}
             className="inline-flex items-center px-6 py-3 rounded-xl font-semibold text-zinc-700 border-2 border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-50 transition-all duration-200 shadow-sm"
           >
-            Back to Projects
+            {hasScorecard ? 'Back to Project' : 'Back to Projects'}
           </Link>
         </div>
       </div>

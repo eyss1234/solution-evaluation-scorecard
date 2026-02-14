@@ -5,9 +5,13 @@ import { usePathname } from 'next/navigation';
 import { STEPS } from '@/lib/steps';
 import { useScorecard } from '@/contexts/ScorecardContext';
 
-export function ScorecardSidebar() {
+interface ScorecardSidebarProps {
+  projectId: string;
+}
+
+export function ScorecardSidebar({ projectId }: ScorecardSidebarProps) {
   const pathname = usePathname();
-  const { isStepComplete, isStepPartiallyComplete, runId } = useScorecard();
+  const { isStepComplete, isStepPartiallyComplete, getStepScore, runId } = useScorecard();
 
   const currentStepNumber = getCurrentStep(pathname);
   const isReview = pathname.endsWith('/review');
@@ -19,13 +23,19 @@ export function ScorecardSidebar() {
         <div className="flex flex-col h-full">
           {/* Logo / Title */}
           <div className="p-6 border-b border-zinc-100">
-            <Link href="/" className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-3 mb-4">
               <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center">
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
               </div>
               <span className="text-base font-semibold text-zinc-900">Solution Evaluation</span>
+            </Link>
+            <Link href={`/project/${projectId}`} className="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-700 font-medium">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Project
             </Link>
           </div>
 
@@ -53,12 +63,13 @@ export function ScorecardSidebar() {
               const isActive = currentStepNumber === step.number;
               const isComplete = isStepComplete(step.number);
               const isPartial = isStepPartiallyComplete(step.number);
+              const stepScore = getStepScore(step.number);
 
               return (
                 <Link
                   key={step.number}
                   href={`/scorecard/${runId}/step/${step.number}`}
-                  className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group ${
+                  className={`flex items-start gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative ${
                     isActive
                       ? 'bg-indigo-50 text-indigo-700'
                       : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900'
@@ -75,6 +86,18 @@ export function ScorecardSidebar() {
                       {step.questionsPerStep} questions
                     </div>
                   </div>
+                  {stepScore !== null && (
+                    <div className="absolute bottom-3 right-3 flex items-baseline gap-1">
+                      <span className={`text-sm font-semibold ${
+                        stepScore >= 80 ? 'text-green-600' :
+                        stepScore >= 60 ? 'text-yellow-600' :
+                        'text-red-600'
+                      }`}>
+                        {stepScore.toFixed(1)}
+                      </span>
+                      <span className="text-xs text-zinc-400">/100</span>
+                    </div>
+                  )}
                 </Link>
               );
             })}
