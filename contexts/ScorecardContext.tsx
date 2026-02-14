@@ -17,6 +17,7 @@ interface ScorecardContextValue {
   scores: Record<string, number>;
   setScore: (questionId: string, value: number) => void;
   isStepComplete: (stepNumber: number) => boolean;
+  isStepPartiallyComplete: (stepNumber: number) => boolean;
   getStepQuestions: (stepNumber: number) => ScorecardQuestion[];
   totalSteps: number;
   runId: string;
@@ -27,13 +28,15 @@ const ScorecardContext = createContext<ScorecardContextValue | null>(null);
 export function ScorecardProvider({
   questions,
   runId,
+  initialScores = {},
   children,
 }: {
   questions: ScorecardQuestion[];
   runId: string;
+  initialScores?: Record<string, number>;
   children: ReactNode;
 }) {
-  const [scores, setScores] = useState<Record<string, number>>({});
+  const [scores, setScores] = useState<Record<string, number>>(initialScores);
 
   const setScore = useCallback((questionId: string, value: number) => {
     setScores((prev) => ({ ...prev, [questionId]: value }));
@@ -54,6 +57,15 @@ export function ScorecardProvider({
     [getStepQuestions, scores]
   );
 
+  const isStepPartiallyComplete = useCallback(
+    (stepNumber: number): boolean => {
+      const stepQuestions = getStepQuestions(stepNumber);
+      const answeredCount = stepQuestions.filter((q) => scores[q.id] !== undefined).length;
+      return answeredCount > 0 && answeredCount < stepQuestions.length;
+    },
+    [getStepQuestions, scores]
+  );
+
   return (
     <ScorecardContext.Provider
       value={{
@@ -61,6 +73,7 @@ export function ScorecardProvider({
         scores,
         setScore,
         isStepComplete,
+        isStepPartiallyComplete,
         getStepQuestions,
         totalSteps: TOTAL_STEPS,
         runId,
