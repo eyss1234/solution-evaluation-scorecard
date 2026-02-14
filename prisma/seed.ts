@@ -12,6 +12,7 @@ async function main() {
   await prisma.gatingAnswer.deleteMany();
   await prisma.gatingRun.deleteMany();
   await prisma.gateQuestion.deleteMany();
+  await prisma.project.deleteMany();
 
   // Seed gate questions
   const questions = [
@@ -431,7 +432,17 @@ async function main() {
     });
   }
 
+  // Seed sample project (optional - for demo purposes)
+  await prisma.project.create({
+    data: {
+      name: 'Sample Project',
+    },
+  });
+
   console.log('Seeding completed successfully!');
+  console.log('- Gate questions seeded');
+  console.log('- Scorecard questions seeded');
+  console.log('- Sample project created');
 }
 
 main()

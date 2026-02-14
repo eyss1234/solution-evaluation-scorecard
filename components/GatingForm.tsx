@@ -13,9 +13,10 @@ interface GateQuestion {
 
 interface GatingFormProps {
   questions: GateQuestion[];
+  projectId: string;
 }
 
-export function GatingForm({ questions }: GatingFormProps) {
+export function GatingForm({ questions, projectId }: GatingFormProps) {
   const router = useRouter();
   const [answers, setAnswers] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,6 +49,7 @@ export function GatingForm({ questions }: GatingFormProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          projectId,
           answers: questions.map((q) => ({
             questionId: q.id,
             value: answers[q.id],
@@ -61,12 +63,8 @@ export function GatingForm({ questions }: GatingFormProps) {
         throw new Error(data.error?.message || 'Failed to submit answers');
       }
 
-      // Redirect based on evaluation
-      if (data.data.shouldProceed) {
-        router.push(`/scorecard/${data.data.runId}/step/1`);
-      } else {
-        router.push(`/stop/${data.data.runId}`);
-      }
+      // Redirect to project page
+      router.push(`/project/${projectId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       setIsSubmitting(false);

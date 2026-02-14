@@ -22,30 +22,35 @@ interface ScorecardPageProps {
 export default async function ScorecardPage({ params }: ScorecardPageProps) {
   const { runId } = await params;
 
-  const run = await prisma.gatingRun.findUnique({
+  const scorecardRun = await prisma.scorecardRun.findUnique({
     where: { id: runId },
     include: {
-      answers: {
-        include: { question: true },
-        orderBy: { question: { order: 'asc' } },
-      },
-      scorecardRun: {
+      project: {
         include: {
-          scores: {
-            include: { question: true },
-            orderBy: [{ question: { stepNumber: 'asc' } }, { question: { order: 'asc' } }],
+          gatingRuns: {
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+            include: {
+              answers: {
+                include: { question: true },
+                orderBy: { question: { order: 'asc' } },
+              },
+            },
           },
         },
+      },
+      scores: {
+        include: { question: true },
+        orderBy: [{ question: { stepNumber: 'asc' } }, { question: { order: 'asc' } }],
       },
     },
   });
 
-  if (!run) {
+  if (!scorecardRun) {
     notFound();
   }
 
-  const scorecardRun = run.scorecardRun;
-  const hasScorecard = scorecardRun && scorecardRun.scores.length > 0;
+  const hasScorecard = scorecardRun.scores.length > 0;
 
   // Calculate weighted scores
   let overallScore = { 

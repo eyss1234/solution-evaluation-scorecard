@@ -1,9 +1,24 @@
 import { prisma } from '@/lib/db';
 import { GatingForm } from '@/components/GatingForm';
+import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-export default async function GatePage() {
+interface GatePageProps {
+  params: Promise<{ projectId: string }>;
+}
+
+export default async function GatePage({ params }: GatePageProps) {
+  const { projectId } = await params;
+
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+  });
+
+  if (!project) {
+    notFound();
+  }
+
   const questions = await prisma.gateQuestion.findMany({
     orderBy: { order: 'asc' },
   });
@@ -21,13 +36,14 @@ export default async function GatePage() {
           <h1 className="text-3xl sm:text-4xl font-bold text-zinc-900 mb-3">
             Gating Questions
           </h1>
+          <p className="text-sm text-zinc-500 mb-2">Project: {project.name}</p>
           <p className="text-lg text-zinc-500 max-w-2xl mx-auto leading-relaxed">
             Answer the following questions to determine if a structured scorecard evaluation is recommended for your solution.
           </p>
         </div>
 
         {/* Form */}
-        <GatingForm questions={questions} />
+        <GatingForm questions={questions} projectId={projectId} />
 
         {/* Footer note */}
         <div className="mt-8 text-center">

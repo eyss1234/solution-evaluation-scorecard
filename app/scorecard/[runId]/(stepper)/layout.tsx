@@ -10,12 +10,15 @@ interface StepperLayoutProps {
 export default async function StepperLayout({ children, params }: StepperLayoutProps) {
   const { runId } = await params;
 
-  // Verify the gating run exists and passed
-  const gatingRun = await prisma.gatingRun.findUnique({
+  // Verify the scorecard run exists
+  const scorecardRun = await prisma.scorecardRun.findUnique({
     where: { id: runId },
+    include: {
+      project: true,
+    },
   });
 
-  if (!gatingRun) {
+  if (!scorecardRun) {
     notFound();
   }
 

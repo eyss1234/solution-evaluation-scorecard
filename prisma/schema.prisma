@@ -10,6 +10,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Project {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  gatingRuns    GatingRun[]
+  scorecardRuns ScorecardRun[]
+
+  @@map("projects")
+}
+
 model GateQuestion {
   id        String   @id @default(cuid())
   text      String
@@ -23,10 +34,11 @@ model GateQuestion {
 
 model GatingRun {
   id        String   @id @default(cuid())
+  projectId String
   createdAt DateTime @default(now())
 
-  answers      GatingAnswer[]
-  scorecardRun ScorecardRun?
+  project Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  answers GatingAnswer[]
 
   @@map("gating_runs")
 }
@@ -61,12 +73,12 @@ model ScorecardQuestion {
 }
 
 model ScorecardRun {
-  id          String   @id @default(cuid())
-  gatingRunId String   @unique
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  projectId String
+  createdAt DateTime @default(now())
 
-  gatingRun GatingRun        @relation(fields: [gatingRunId], references: [id], onDelete: Cascade)
-  scores    ScorecardScore[]
+  project Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  scores  ScorecardScore[]
 
   @@map("scorecard_runs")
 }
