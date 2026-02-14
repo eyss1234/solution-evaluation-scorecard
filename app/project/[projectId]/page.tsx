@@ -5,6 +5,9 @@ import { Card } from '@/components/Card';
 import { evaluateGating } from '@/domain/gating/evaluate';
 import { CreateScorecardButton } from '@/components/CreateScorecardButton';
 import { formatDate } from '@/lib/format';
+import { calculateRunComparison, type ScorecardRunInput } from '@/domain/scorecard/compare';
+import { ScorecardComparison } from '@/components/ScorecardComparison';
+import { STEPS } from '@/lib/steps';
 
 interface ProjectPageProps {
   params: Promise<{ projectId: string }>;
@@ -60,6 +63,20 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     );
     gatingStatus = evaluation.shouldProceed ? 'passed' : 'failed';
   }
+
+  const completedScorecardRuns = project.scorecardRuns.filter(
+    (run: { scores: unknown[] }) => run.scores.length > 0
+  );
+
+  const sectionWeights = new Map<number, number>();
+  STEPS.forEach((step) => {
+    sectionWeights.set(step.number, step.sectionWeight);
+  });
+
+  const comparisonData = calculateRunComparison(
+    completedScorecardRuns as ScorecardRunInput[],
+    sectionWeights
+  );
 
   return (
     <main className="min-h-screen bg-zinc-50 py-8 px-4 sm:py-12">
@@ -147,7 +164,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
         {/* Scorecards Section */}
         {gatingStatus === 'passed' && (
-          <Card>
+          <Card className="mb-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-zinc-900">Scorecards</h2>
               <CreateScorecardButton projectId={projectId} />
@@ -181,6 +198,14 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 ))}
               </div>
             )}
+          </Card>
+        )}
+
+        {/* Scorecard Comparison Section */}
+        {gatingStatus === 'passed' && (
+          <Card>
+            <h2 className="text-xl font-semibold text-zinc-900 mb-4">Scorecard Comparison</h2>
+            <ScorecardComparison comparisonData={comparisonData} />
           </Card>
         )}
       </div>
