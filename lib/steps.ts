@@ -2,33 +2,52 @@ export interface StepDefinition {
   number: number;
   name: string;
   description: string;
+  sectionWeight: number;
   questionsPerStep: number;
 }
 
 export const STEPS: StepDefinition[] = [
   {
     number: 1,
-    name: 'Strategic Fit',
-    description: 'Alignment with strategic objectives and technology landscape',
-    questionsPerStep: 8,
+    name: 'Business & Functional Fit',
+    description: 'Section Weight: 30%',
+    sectionWeight: 30,
+    questionsPerStep: 3,
   },
   {
     number: 2,
-    name: 'Risk & Compliance',
-    description: 'Data protection, regulatory compliance, and operational risk',
-    questionsPerStep: 8,
+    name: 'Technical & Architectural Fit',
+    description: 'Section Weight: 20%',
+    sectionWeight: 20,
+    questionsPerStep: 7,
   },
   {
     number: 3,
-    name: 'Cost & Resources',
-    description: 'Total cost of ownership, resource requirements, and timelines',
-    questionsPerStep: 8,
+    name: 'Vendor & Roadmap Assessment',
+    description: 'Section Weight: 10%',
+    sectionWeight: 10,
+    questionsPerStep: 4,
   },
   {
     number: 4,
-    name: 'User Impact & Adoption',
-    description: 'End-user needs, change management, and adoption readiness',
-    questionsPerStep: 8,
+    name: 'Delivery Feasibility',
+    description: 'Section Weight: 15%',
+    sectionWeight: 15,
+    questionsPerStep: 4,
+  },
+  {
+    number: 5,
+    name: 'User Experience & Adoption',
+    description: 'Section Weight: 10%',
+    sectionWeight: 10,
+    questionsPerStep: 3,
+  },
+  {
+    number: 6,
+    name: 'Commercials & Total Cost of Ownership',
+    description: 'Section Weight: 15%',
+    sectionWeight: 15,
+    questionsPerStep: 3,
   },
 ];
 

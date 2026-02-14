@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { STEPS } from '@/lib/steps';
-import { useScorecard } from '@/context/ScorecardContext';
+import { useScorecard } from '@/contexts/ScorecardContext';
 
 const SCALE_LABELS: Record<number, string> = {
   0: 'N/A',

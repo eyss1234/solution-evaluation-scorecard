@@ -1,6 +1,6 @@
 'use client';
 
-import { ScorecardProvider } from '@/context/ScorecardContext';
+import { ScorecardProvider } from '@/contexts/ScorecardContext';
 import { ScorecardSidebar } from '@/components/ScorecardSidebar';
 
 interface ScorecardQuestion {
@@ -8,6 +8,8 @@ interface ScorecardQuestion {
   text: string;
   stepNumber: number;
   order: number;
+  weight: number;
+  criteria: Array<{ score: number; description: string }>;
 }
 
 export function ScorecardShell({

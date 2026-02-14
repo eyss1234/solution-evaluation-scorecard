@@ -20,9 +20,19 @@ export default async function StepperLayout({ children, params }: StepperLayoutP
   }
 
   // Fetch scorecard questions
-  const questions = await prisma.scorecardQuestion.findMany({
+  const questionsRaw = await prisma.scorecardQuestion.findMany({
     orderBy: [{ stepNumber: 'asc' }, { order: 'asc' }],
   });
+
+  // Parse criteria JSON and format for context
+  const questions = questionsRaw.map((q) => ({
+    id: q.id,
+    text: q.text,
+    stepNumber: q.stepNumber,
+    order: q.order,
+    weight: q.weight,
+    criteria: q.criteria as Array<{ score: number; description: string }>,
+  }));
 
   return (
     <ScorecardShell questions={questions} runId={runId}>
