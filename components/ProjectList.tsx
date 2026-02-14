@@ -113,13 +113,13 @@ export function ProjectList({ projects }: ProjectListProps) {
           <p className="text-zinc-500">Create your first project to get started</p>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-8">
           <h2 className="text-xl font-semibold text-zinc-900">Your Projects</h2>
           {projects.map((project) => {
             const gatingStatus = getGatingStatus(project);
             return (
               <Link key={project.id} href={`/project/${project.id}`}>
-                <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <Card className="hover:shadow-md transition-shadow cursor-pointer mb-2">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold text-zinc-900 mb-1">{project.name}</h3>
