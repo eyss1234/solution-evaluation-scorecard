@@ -75,9 +75,9 @@ export function GatingForm({ questions, projectId }: GatingFormProps) {
   const progress = (answeredCount / questions.length) * 100;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-5 pt-20">
       {/* Progress indicator */}
-      <div className="bg-white rounded-2xl shadow-sm border border-zinc-100 p-4">
+      <div className="sticky top-4 z-20 bg-white/95 backdrop-blur-sm rounded-2xl shadow-sm border border-zinc-100 p-4 -mt-20 mb-6">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-zinc-700">Progress</span>
           <span className="text-sm font-semibold text-indigo-600">
@@ -92,19 +92,23 @@ export function GatingForm({ questions, projectId }: GatingFormProps) {
         </div>
       </div>
 
+      {/* Background cover to hide cards in the gap */}
+      <div className="fixed -top-5 left-0 right-0 h-20 bg-zinc-50 z-10" />
+
+      {/* Visual separator layer */}
+      <div className="h-px bg-gradient-to-r from-transparent via-zinc-200 to-transparent mb-6" />
+
       {questions.map((question, index) => (
         <Card key={question.id}>
-          <div className="space-y-4">
-            <div className="flex items-start gap-3">
-              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-50 text-indigo-700 font-semibold flex items-center justify-center text-sm">
-                {index + 1}
-              </span>
-              <h3 className="text-xl font-medium text-zinc-900 leading-relaxed flex-1">
-                {question.text}
-              </h3>
-            </div>
-            <div className="flex gap-3 ml-11">
-              <label className={`flex-1 flex items-center justify-center gap-2 cursor-pointer px-4 py-3 rounded-xl border-2 transition-all duration-200 ${
+          <div className="flex items-start gap-4">
+            <span className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-50 text-indigo-700 font-semibold flex items-center justify-center text-sm">
+              {index + 1}
+            </span>
+            <h3 className="text-xl font-medium text-zinc-900 leading-relaxed flex-1">
+              {question.text}
+            </h3>
+            <div className="flex gap-3 flex-shrink-0">
+              <label className={`flex items-center justify-center gap-2 cursor-pointer px-4 py-3 rounded-xl border-2 transition-all duration-200 min-w-[80px] ${
                 answers[question.id] === true
                   ? 'border-green-300 bg-green-50 text-green-700 shadow-sm'
                   : 'border-zinc-200 bg-white hover:border-zinc-300 text-zinc-700'
@@ -122,7 +126,7 @@ export function GatingForm({ questions, projectId }: GatingFormProps) {
                 </svg>
                 <span className="font-semibold">Yes</span>
               </label>
-              <label className={`flex-1 flex items-center justify-center gap-2 cursor-pointer px-4 py-3 rounded-xl border-2 transition-all duration-200 ${
+              <label className={`flex items-center justify-center gap-2 cursor-pointer px-4 py-3 rounded-xl border-2 transition-all duration-200 min-w-[80px] ${
                 answers[question.id] === false
                   ? 'border-red-200 bg-red-50 text-red-600 shadow-sm'
                   : 'border-zinc-200 bg-white hover:border-zinc-300 text-zinc-700'
