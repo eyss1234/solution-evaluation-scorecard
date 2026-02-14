@@ -7,7 +7,7 @@ import { useScorecard } from '@/contexts/ScorecardContext';
 
 export function ScorecardSidebar() {
   const pathname = usePathname();
-  const { isStepComplete, runId } = useScorecard();
+  const { isStepComplete, isStepPartiallyComplete, runId } = useScorecard();
 
   const currentStepNumber = getCurrentStep(pathname);
   const isReview = pathname.endsWith('/review');
@@ -52,7 +52,7 @@ export function ScorecardSidebar() {
             {STEPS.map((step) => {
               const isActive = currentStepNumber === step.number;
               const isComplete = isStepComplete(step.number);
-              const isPast = currentStepNumber !== null && step.number < currentStepNumber;
+              const isPartial = isStepPartiallyComplete(step.number);
 
               return (
                 <Link
@@ -64,7 +64,7 @@ export function ScorecardSidebar() {
                       : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900'
                   }`}
                 >
-                  <StepIndicator isActive={isActive} isComplete={isComplete || isPast} />
+                  <StepIndicator isActive={isActive} isComplete={isComplete} isPartial={isPartial} />
                   <div className="flex-1 min-w-0">
                     <div className={`text-base font-medium truncate ${
                       isActive ? 'text-indigo-700' : 'text-zinc-700 group-hover:text-zinc-900'
@@ -127,6 +127,7 @@ export function ScorecardSidebar() {
             {STEPS.map((step) => {
               const isActive = currentStepNumber === step.number;
               const isComplete = isStepComplete(step.number);
+              const isPartial = isStepPartiallyComplete(step.number);
               return (
                 <Link
                   key={step.number}
@@ -139,7 +140,9 @@ export function ScorecardSidebar() {
                         ? 'bg-indigo-600'
                         : isComplete
                           ? 'bg-indigo-300'
-                          : 'bg-zinc-200'
+                          : isPartial
+                            ? 'bg-amber-300'
+                            : 'bg-zinc-200'
                     }`}
                   />
                 </Link>
@@ -162,10 +165,12 @@ export function ScorecardSidebar() {
 function StepIndicator({
   isActive,
   isComplete,
+  isPartial = false,
   isReview = false,
 }: {
   isActive: boolean;
   isComplete: boolean;
+  isPartial?: boolean;
   isReview?: boolean;
 }) {
   if (isComplete && !isActive) {
@@ -182,6 +187,14 @@ function StepIndicator({
     return (
       <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0">
         <div className="w-2.5 h-2.5 rounded-full bg-white" />
+      </div>
+    );
+  }
+
+  if (isPartial) {
+    return (
+      <div className="w-8 h-8 rounded-full bg-amber-50 border-2 border-amber-300 flex items-center justify-center flex-shrink-0">
+        <div className="w-2 h-2 rounded-full bg-amber-500" />
       </div>
     );
   }

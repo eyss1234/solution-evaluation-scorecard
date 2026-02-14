@@ -2,6 +2,9 @@ import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { ScorecardShell } from '@/components/ScorecardShell';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 interface StepperLayoutProps {
   children: React.ReactNode;
   params: Promise<{ runId: string }>;
@@ -37,8 +40,21 @@ export default async function StepperLayout({ children, params }: StepperLayoutP
     criteria: q.criteria as Array<{ score: number; description: string }>,
   }));
 
+  // Fetch existing scores for this run
+  const existingScores = await prisma.scorecardScore.findMany({
+    where: { runId },
+  });
+
+  // Convert to Record<questionId, value>
+  const initialScores = existingScores.reduce((acc, score) => {
+    acc[score.questionId] = score.value;
+    return acc;
+  }, {} as Record<string, number>);
+
+  console.log('[Layout] Loading scorecard:', { runId, scoresCount: existingScores.length, initialScores });
+
   return (
-    <ScorecardShell questions={questions} runId={runId}>
+    <ScorecardShell questions={questions} runId={runId} initialScores={initialScores}>
       {children}
     </ScorecardShell>
   );

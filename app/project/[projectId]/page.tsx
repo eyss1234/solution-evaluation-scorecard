@@ -177,7 +177,10 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           <Card className="mb-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-zinc-900">Scorecards</h2>
-              <CreateScorecardButton projectId={projectId} />
+              <CreateScorecardButton 
+                projectId={projectId} 
+                nextScorecardNumber={project.scorecardRuns.length + 1} 
+              />
             </div>
 
             {project.scorecardRuns.length === 0 ? (

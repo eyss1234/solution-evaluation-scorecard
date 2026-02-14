@@ -15,14 +15,16 @@ interface ScorecardQuestion {
 export function ScorecardShell({
   questions,
   runId,
+  initialScores,
   children,
 }: {
   questions: ScorecardQuestion[];
   runId: string;
+  initialScores?: Record<string, number>;
   children: React.ReactNode;
 }) {
   return (
-    <ScorecardProvider questions={questions} runId={runId}>
+    <ScorecardProvider questions={questions} runId={runId} initialScores={initialScores}>
       <div className="min-h-screen bg-zinc-50">
         <ScorecardSidebar />
         {/* Main content area */}

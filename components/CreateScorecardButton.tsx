@@ -6,9 +6,10 @@ import { Button } from './Button';
 
 interface CreateScorecardButtonProps {
   projectId: string;
+  nextScorecardNumber?: number;
 }
 
-export function CreateScorecardButton({ projectId }: CreateScorecardButtonProps) {
+export function CreateScorecardButton({ projectId, nextScorecardNumber = 1 }: CreateScorecardButtonProps) {
   const router = useRouter();
   const [isCreating, setIsCreating] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -85,8 +86,8 @@ export function CreateScorecardButton({ projectId }: CreateScorecardButtonProps)
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-3 py-2 border border-zinc-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="e.g., Q1 2024 Evaluation"
+                className="w-full px-3 py-2 border border-zinc-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-zinc-400"
+                placeholder={`Scorecard #${nextScorecardNumber}`}
                 disabled={isCreating}
                 autoFocus
               />

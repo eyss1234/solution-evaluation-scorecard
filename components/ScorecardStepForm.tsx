@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useScorecard } from '@/contexts/ScorecardContext';
 import { getStep, TOTAL_STEPS } from '@/lib/steps';
@@ -22,6 +23,7 @@ export function ScorecardStepForm({ stepNumber }: ScorecardStepFormProps) {
   const { scores, setScore, getStepQuestions, isStepComplete, runId } = useScorecard();
   const step = getStep(stepNumber);
   const questions = getStepQuestions(stepNumber);
+  const [isSaving, setIsSaving] = useState(false);
 
   if (!step) return null;
 
@@ -29,7 +31,40 @@ export function ScorecardStepForm({ stepNumber }: ScorecardStepFormProps) {
   const isFirst = stepNumber === 1;
   const isLast = stepNumber === TOTAL_STEPS;
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    // Save current step's answers before proceeding
+    setIsSaving(true);
+    try {
+      const stepScores = questions
+        .filter((q) => scores[q.id] !== undefined)
+        .map((q) => ({
+          questionId: q.id,
+          value: scores[q.id],
+        }));
+
+      console.log('[StepForm] Saving step', stepNumber, ':', { stepScores, allScores: scores });
+
+      if (stepScores.length > 0) {
+        const response = await fetch(`/api/scorecard/${runId}/save`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ scores: stepScores }),
+        });
+
+        const data = await response.json();
+        if (!data.ok) {
+          console.error('[StepForm] Failed to save progress:', data.error);
+        } else {
+          console.log('[StepForm] Successfully saved:', data.data);
+        }
+      }
+    } catch (error) {
+      console.error('[StepForm] Error saving progress:', error);
+    } finally {
+      setIsSaving(false);
+    }
+
+    // Navigate to next step
     if (isLast) {
       router.push(`/scorecard/${runId}/review`);
     } else {
@@ -121,10 +156,10 @@ export function ScorecardStepForm({ stepNumber }: ScorecardStepFormProps) {
         <button
           type="button"
           onClick={handleNext}
-          disabled={!canProceed}
+          disabled={!canProceed || isSaving}
           className="px-6 py-3 rounded-xl font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-all duration-200 shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {isLast ? 'Review Scores' : 'Continue'}
+          {isSaving ? 'Saving...' : isLast ? 'Review Scores' : 'Continue'}
         </button>
       </div>
     </div>
