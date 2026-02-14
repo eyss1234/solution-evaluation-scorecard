@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { Card } from '@/components/Card';
 import { evaluateGating } from '@/domain/gating/evaluate';
 import { CreateScorecardButton } from '@/components/CreateScorecardButton';
+import { formatDate } from '@/lib/format';
 
 interface ProjectPageProps {
   params: Promise<{ projectId: string }>;
@@ -52,7 +53,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
   if (latestGatingRun) {
     const evaluation = evaluateGating(
-      latestGatingRun.answers.map((a) => ({
+      latestGatingRun.answers.map((a: { questionId: string; value: boolean }) => ({
         questionId: a.questionId,
         value: a.value,
       }))
@@ -72,7 +73,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             Back to Projects
           </Link>
           <h1 className="text-3xl sm:text-4xl font-bold text-zinc-900 mt-2">{project.name}</h1>
-          <p className="text-zinc-500 mt-2">Created {new Date(project.createdAt).toLocaleDateString()}</p>
+          <p className="text-zinc-500 mt-2">Created {formatDate(project.createdAt)}</p>
         </div>
 
         {/* Gating Status Card */}
@@ -92,8 +93,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                   <p className="text-sm text-zinc-500">Begin with the gating questions to determine if a scorecard is needed</p>
                 </div>
               </div>
-              <Link href={`/project/${projectId}/gate`}>
-                <Button>Start Gating Evaluation</Button>
+              <Link 
+                href={`/project/${projectId}/gate`}
+                className="inline-flex items-center px-6 py-3 rounded-xl font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-all duration-200 shadow-sm"
+              >
+                Start Gating Evaluation
               </Link>
             </div>
           )}
@@ -113,7 +117,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               </div>
               <div className="pt-4 border-t border-zinc-100">
                 <p className="text-sm text-zinc-600 mb-3">
-                  {latestGatingRun.answers.filter(a => a.value).length} of {latestGatingRun.answers.length} questions answered "Yes"
+                  {latestGatingRun.answers.filter((a: { value: boolean }) => a.value).length} of {latestGatingRun.answers.length} questions answered "Yes"
                 </p>
               </div>
             </div>
@@ -158,7 +162,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               </div>
             ) : (
               <div className="space-y-3">
-                {project.scorecardRuns.map((run, index) => (
+                {project.scorecardRuns.map((run: { id: string; scores: unknown[]; createdAt: Date }, index: number) => (
                   <Link key={run.id} href={`/scorecard/${run.id}/step/1`}>
                     <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-200 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all cursor-pointer">
                       <div>
@@ -166,7 +170,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                           Scorecard #{project.scorecardRuns.length - index}
                         </p>
                         <p className="text-sm text-zinc-500">
-                          {run.scores.length > 0 ? `${run.scores.length} questions answered` : 'Not started'} • {new Date(run.createdAt).toLocaleDateString()}
+                          {run.scores.length > 0 ? `${run.scores.length} questions answered` : 'Not started'} • {formatDate(run.createdAt)}
                         </p>
                       </div>
                       <svg className="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

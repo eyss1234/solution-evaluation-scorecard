@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { Card } from '@/components/Card';
-import { Button } from '@/components/Button';
 import { STEPS } from '@/lib/steps';
 import { calculateOverallScore, type QuestionScore } from '@/domain/scorecard/calculate';
 
@@ -174,8 +173,11 @@ export default async function ScorecardPage({ params }: ScorecardPageProps) {
               <p className="text-zinc-600">
                 Continue to the scorecard evaluation to score your solution across {STEPS.length} categories.
               </p>
-              <Link href={`/scorecard/${runId}/step/1`}>
-                <Button>Start Scorecard</Button>
+              <Link 
+                href={`/scorecard/${runId}/step/1`}
+                className="inline-flex items-center px-6 py-3 rounded-xl font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-all duration-200 shadow-sm"
+              >
+                Start Scorecard
               </Link>
             </div>
           </Card>
@@ -183,8 +185,11 @@ export default async function ScorecardPage({ params }: ScorecardPageProps) {
 
         {/* Actions */}
         <div className="flex gap-3 justify-center">
-          <Link href="/">
-            <Button variant="secondary">Start New Evaluation</Button>
+          <Link 
+            href="/"
+            className="inline-flex items-center px-6 py-3 rounded-xl font-semibold text-zinc-700 border-2 border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-50 transition-all duration-200 shadow-sm"
+          >
+            Back to Projects
           </Link>
         </div>
       </div>

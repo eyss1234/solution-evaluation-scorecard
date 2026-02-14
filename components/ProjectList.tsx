@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card } from './Card';
 import { Button } from './Button';
+import { formatDate } from '@/lib/format';
 
 interface Project {
   id: string;
@@ -123,7 +124,7 @@ export function ProjectList({ projects }: ProjectListProps) {
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold text-zinc-900 mb-1">{project.name}</h3>
                       <div className="flex items-center gap-4 text-sm text-zinc-500">
-                        <span>Created {new Date(project.createdAt).toLocaleDateString()}</span>
+                        <span>Created {formatDate(project.createdAt)}</span>
                         <span>•</span>
                         <span>{project.scorecardRuns.length} scorecard{project.scorecardRuns.length !== 1 ? 's' : ''}</span>
                       </div>
