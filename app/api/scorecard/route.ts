@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 
 const createScorecardSchema = z.object({
   projectId: z.string(),
+  name: z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { projectId } = validation.data;
+    const { projectId, name } = validation.data;
 
     // Verify project exists
     const project = await prisma.project.findUnique({
@@ -42,6 +43,7 @@ export async function POST(request: NextRequest) {
     const scorecardRun = await prisma.scorecardRun.create({
       data: {
         projectId,
+        name,
       },
     });
 
