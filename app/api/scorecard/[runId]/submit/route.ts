@@ -33,33 +33,24 @@ export async function POST(
       );
     }
 
-    // Verify gating run exists
-    const gatingRun = await prisma.gatingRun.findUnique({
+    // Verify scorecard run exists
+    const scorecardRun = await prisma.scorecardRun.findUnique({
       where: { id: runId },
     });
 
-    if (!gatingRun) {
+    if (!scorecardRun) {
       return NextResponse.json(
-        { ok: false, error: { message: 'Gating run not found' } },
+        { ok: false, error: { message: 'Scorecard run not found' } },
         { status: 404 }
       );
     }
 
     const { scores } = validation.data;
 
-    // Create or update scorecard run
-    const scorecardRun = await prisma.scorecardRun.upsert({
-      where: { gatingRunId: runId },
-      create: {
-        gatingRunId: runId,
-        scores: {
-          create: scores.map((s) => ({
-            questionId: s.questionId,
-            value: s.value,
-          })),
-        },
-      },
-      update: {
+    // Update scorecard run with scores
+    const updatedRun = await prisma.scorecardRun.update({
+      where: { id: runId },
+      data: {
         scores: {
           deleteMany: {},
           create: scores.map((s) => ({
@@ -80,8 +71,8 @@ export async function POST(
     return NextResponse.json({
       ok: true,
       data: {
-        scorecardRunId: scorecardRun.id,
-        totalScores: scorecardRun.scores.length,
+        scorecardRunId: updatedRun.id,
+        totalScores: updatedRun.scores.length,
       },
     });
   } catch (error) {

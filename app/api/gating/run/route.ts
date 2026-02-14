@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { evaluateGating } from '@/domain/gating/evaluate';
 
 const createRunSchema = z.object({
+  projectId: z.string(),
   answers: z.array(
     z.object({
       questionId: z.string(),
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { answers } = validation.data;
+    const { projectId, answers } = validation.data;
 
     // Evaluate gating logic
     const evaluation = evaluateGating(answers);
@@ -38,6 +39,7 @@ export async function POST(request: NextRequest) {
     // Create run and answers in database
     const run = await prisma.gatingRun.create({
       data: {
+        projectId,
         answers: {
           create: answers.map((a) => ({
             questionId: a.questionId,
