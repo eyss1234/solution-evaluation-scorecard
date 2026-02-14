@@ -8,6 +8,8 @@ interface ScorecardQuestion {
   text: string;
   stepNumber: number;
   order: number;
+  weight: number;
+  criteria: Array<{ score: number; description: string }>;
 }
 
 interface ScorecardContextValue {

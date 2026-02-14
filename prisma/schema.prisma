@@ -50,6 +50,8 @@ model ScorecardQuestion {
   text       String
   stepNumber Int
   order      Int
+  weight     Float    @default(1.0)
+  criteria   Json     @default("[]")
   createdAt  DateTime @default(now())
 
   scores ScorecardScore[]

@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { STEPS } from '@/lib/steps';
+import { calculateOverallScore, type QuestionScore } from '@/domain/scorecard/calculate';
 
 const SCALE_LABELS: Record<number, string> = {
   0: 'N/A',
@@ -46,12 +47,30 @@ export default async function ScorecardPage({ params }: ScorecardPageProps) {
   const scorecardRun = run.scorecardRun;
   const hasScorecard = scorecardRun && scorecardRun.scores.length > 0;
 
-  // Scorecard stats
-  const allScores = hasScorecard ? scorecardRun.scores.map((s) => s.value) : [];
-  const nonZeroScores = allScores.filter((v) => v > 0);
-  const avgScore = nonZeroScores.length > 0
-    ? (nonZeroScores.reduce((a, b) => a + b, 0) / nonZeroScores.length).toFixed(1)
-    : '0.0';
+  // Calculate weighted scores
+  let overallScore = { 
+    totalWeightedScore: 0, 
+    sectionScores: [] as Array<{ stepNumber: number; sectionWeight: number; weightedScore: number; rawAverage: number; questionCount: number }>
+  };
+  
+  if (hasScorecard) {
+    // Prepare question scores with weights
+    const questionScores: QuestionScore[] = scorecardRun.scores.map((s: any) => ({
+      questionId: s.questionId,
+      stepNumber: s.question.stepNumber,
+      weight: s.question.weight,
+      value: s.value,
+    }));
+
+    // Create section weights map
+    const sectionWeights = new Map<number, number>();
+    STEPS.forEach((step) => {
+      sectionWeights.set(step.number, step.sectionWeight);
+    });
+
+    // Calculate weighted overall score
+    overallScore = calculateOverallScore(questionScores, sectionWeights);
+  }
 
   return (
     <main className="min-h-screen bg-zinc-50 py-12 px-4">
@@ -82,15 +101,15 @@ export default async function ScorecardPage({ params }: ScorecardPageProps) {
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
                     <div className="text-3xl font-bold text-zinc-900">{scorecardRun.scores.length}</div>
-                    <div className="text-sm text-zinc-500 mt-1">Scored</div>
+                    <div className="text-sm text-zinc-500 mt-1">Questions</div>
                   </div>
                   <div>
-                    <div className="text-3xl font-bold text-indigo-600">{avgScore}</div>
-                    <div className="text-sm text-zinc-500 mt-1">Avg Score</div>
+                    <div className="text-3xl font-bold text-indigo-600">{overallScore.totalWeightedScore.toFixed(1)}</div>
+                    <div className="text-sm text-zinc-500 mt-1">Weighted Score</div>
                   </div>
                   <div>
                     <div className="text-3xl font-bold text-zinc-900">{STEPS.length}</div>
-                    <div className="text-sm text-zinc-500 mt-1">Steps</div>
+                    <div className="text-sm text-zinc-500 mt-1">Sections</div>
                   </div>
                 </div>
               </div>
@@ -100,34 +119,39 @@ export default async function ScorecardPage({ params }: ScorecardPageProps) {
 
         {/* Scorecard Scores by Step */}
         {hasScorecard && STEPS.map((step) => {
-          const stepScores = scorecardRun.scores.filter((s) => s.question.stepNumber === step.number);
+          const stepScores = scorecardRun.scores.filter((s: any) => s.question.stepNumber === step.number);
           if (stepScores.length === 0) return null;
 
-          const stepAvg = stepScores.filter((s) => s.value > 0).length > 0
-            ? (stepScores.filter((s) => s.value > 0).reduce((a, s) => a + s.value, 0) / stepScores.filter((s) => s.value > 0).length).toFixed(1)
-            : '0.0';
+          // Find the calculated section score
+          const sectionScore = overallScore.sectionScores.find((s) => s.stepNumber === step.number);
+          const weightedScore = sectionScore ? sectionScore.weightedScore.toFixed(1) : '0.0';
+          const contribution = sectionScore ? (sectionScore.weightedScore * step.sectionWeight / 100).toFixed(1) : '0.0';
 
           return (
             <Card key={step.number}>
               <div className="flex items-center justify-between mb-5">
-                <div>
+                <div className="flex-1">
                   <p className="text-sm uppercase tracking-wide text-zinc-500 font-medium">
-                    Step {step.number}
+                    Step {step.number} • Weight: {step.sectionWeight}%
                   </p>
                   <h2 className="text-lg font-semibold text-zinc-900 mt-0.5">{step.name}</h2>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-indigo-600">{stepAvg}</div>
-                  <div className="text-xs text-zinc-500">avg</div>
+                  <div className="text-2xl font-bold text-indigo-600">{weightedScore}</div>
+                  <div className="text-xs text-zinc-500">section score</div>
+                  <div className="text-xs text-zinc-400 mt-1">+{contribution} to total</div>
                 </div>
               </div>
               <div className="space-y-3">
-                {stepScores.map((score) => (
+                {stepScores.map((score: any) => (
                   <div key={score.id} className="flex items-start gap-3 text-sm">
                     <span className={`flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold ${getScoreBadgeStyle(score.value)}`}>
                       {score.value}
                     </span>
                     <span className="text-zinc-700 flex-1">{score.question.text}</span>
+                    <span className="text-xs text-zinc-400 flex-shrink-0 mr-2">
+                      w:{score.question.weight}
+                    </span>
                     <span className={`font-medium flex-shrink-0 text-xs ${getScoreTextStyle(score.value)}`}>
                       {SCALE_LABELS[score.value]}
                     </span>

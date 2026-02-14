@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { STEPS } from '@/lib/steps';
-import { useScorecard } from '@/context/ScorecardContext';
+import { useScorecard } from '@/contexts/ScorecardContext';
 
 const SCALE_LABELS: Record<number, string> = {
   0: 'N/A',
@@ -53,10 +53,8 @@ export function ScorecardReview() {
     }
   };
 
-  // Calculate averages
-  const totalScore = Object.values(scores).reduce((sum, v) => sum + v, 0);
-  const answeredCount = Object.values(scores).filter((v) => v > 0).length;
-  const avgScore = answeredCount > 0 ? (totalScore / answeredCount).toFixed(1) : '0.0';
+  // Count answered questions
+  const answeredCount = Object.values(scores).filter((v) => v !== undefined).length;
 
   return (
     <div className="space-y-8">
@@ -73,18 +71,14 @@ export function ScorecardReview() {
 
       {/* Summary */}
       <div className="bg-white rounded-2xl shadow-sm border border-zinc-100 p-6">
-        <div className="grid grid-cols-3 gap-4 text-center">
+        <div className="grid grid-cols-2 gap-4 text-center max-w-md mx-auto">
           <div>
             <div className="text-3xl font-bold text-zinc-900">{questions.length}</div>
-            <div className="text-sm text-zinc-500 mt-1">Questions</div>
+            <div className="text-sm text-zinc-500 mt-1">Total Questions</div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-indigo-600">{avgScore}</div>
-            <div className="text-sm text-zinc-500 mt-1">Avg Score</div>
-          </div>
-          <div>
-            <div className="text-3xl font-bold text-zinc-900">{answeredCount}</div>
-            <div className="text-sm text-zinc-500 mt-1">Scored</div>
+            <div className="text-3xl font-bold text-indigo-600">{answeredCount}</div>
+            <div className="text-sm text-zinc-500 mt-1">Answered</div>
           </div>
         </div>
       </div>

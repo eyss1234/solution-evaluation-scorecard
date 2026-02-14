@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { STEPS } from '@/lib/steps';
-import { useScorecard } from '@/context/ScorecardContext';
+import { useScorecard } from '@/contexts/ScorecardContext';
 
 export function ScorecardSidebar() {
   const pathname = usePathname();

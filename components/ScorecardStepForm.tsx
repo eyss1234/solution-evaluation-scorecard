@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useScorecard } from '@/context/ScorecardContext';
+import { useScorecard } from '@/contexts/ScorecardContext';
 import { getStep, TOTAL_STEPS } from '@/lib/steps';
 
 const SCALE_LABELS: Record<number, string> = {
@@ -56,23 +56,6 @@ export function ScorecardStepForm({ stepNumber }: ScorecardStepFormProps) {
         <p className="text-zinc-500 mt-1">{step.description}</p>
       </div>
 
-      {/* Scale legend */}
-      <div className="bg-white rounded-2xl shadow-sm border border-zinc-100 p-6">
-        <p className="text-sm uppercase tracking-wide text-zinc-500 font-medium mb-3">
-          Grading Scale
-        </p>
-        <div className="flex flex-wrap gap-3">
-          {[0, 1, 2, 3, 4, 5].map((value) => (
-            <div key={value} className="flex items-center gap-1.5 text-sm text-zinc-600">
-              <span className="w-6 h-6 rounded-lg bg-zinc-100 flex items-center justify-center text-xs font-bold text-zinc-700">
-                {value}
-              </span>
-              <span>{SCALE_LABELS[value]}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Questions */}
       <div className="space-y-5">
         {questions.map((question) => {
@@ -82,24 +65,41 @@ export function ScorecardStepForm({ stepNumber }: ScorecardStepFormProps) {
               key={question.id}
               className="bg-white rounded-2xl shadow-sm border border-zinc-100 p-8 transition-all duration-200"
             >
-              <h3 className="text-xl font-medium text-zinc-900 mb-6 leading-relaxed">
-                {question.text}
-              </h3>
-              <div className="flex gap-2">
-                {[0, 1, 2, 3, 4, 5].map((value) => (
+              <div className="flex items-start justify-between mb-6">
+                <h3 className="text-xl font-medium text-zinc-900 leading-relaxed flex-1">
+                  {question.text}
+                </h3>
+                {question.weight && (
+                  <span className="ml-4 px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-lg flex-shrink-0">
+                    Weight: {question.weight}
+                  </span>
+                )}
+              </div>
+              <div className="space-y-2">
+                {question.criteria && question.criteria.map((criterion) => (
                   <button
-                    key={value}
+                    key={criterion.score}
                     type="button"
-                    onClick={() => setScore(question.id, value)}
-                    className={`flex-1 flex flex-col items-center gap-1 px-3 py-3 rounded-xl border-2 font-semibold transition-all duration-200 cursor-pointer ${
-                      currentScore === value
-                        ? getScoreStyle(value)
-                        : 'border-zinc-200 bg-white hover:border-zinc-300 text-zinc-600 hover:text-zinc-800'
+                    onClick={() => setScore(question.id, criterion.score)}
+                    className={`w-full flex items-start gap-3 px-4 py-3 rounded-xl border-2 transition-all duration-200 cursor-pointer text-left ${
+                      currentScore === criterion.score
+                        ? getScoreStyle(criterion.score)
+                        : 'border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-50'
                     }`}
                   >
-                    <span className="text-lg">{value}</span>
-                    <span className="text-[10px] font-medium leading-tight hidden sm:block">
-                      {SCALE_LABELS[value]}
+                    <span className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold ${
+                      currentScore === criterion.score
+                        ? 'bg-white/30'
+                        : 'bg-zinc-100 text-zinc-700'
+                    }`}>
+                      {criterion.score}
+                    </span>
+                    <span className={`flex-1 text-sm leading-relaxed ${
+                      currentScore === criterion.score
+                        ? 'font-medium'
+                        : 'text-zinc-700'
+                    }`}>
+                      {criterion.description}
                     </span>
                   </button>
                 ))}
