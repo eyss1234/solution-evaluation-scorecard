@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { evaluateGating } from '@/domain/gating/evaluate';
+
+const updateProjectSchema = z.object({
+  name: z.string().min(1, 'Project name cannot be empty'),
+});
 
 export async function GET(
   request: NextRequest,
@@ -73,6 +78,78 @@ export async function GET(
       {
         ok: false,
         error: { message: 'Failed to fetch project' },
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ projectId: string }> }
+) {
+  try {
+    const { projectId } = await params;
+    const body = await request.json();
+    const validation = updateProjectSchema.safeParse(body);
+
+    if (!validation.success) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: {
+            message: 'Invalid request body',
+            details: validation.error.errors,
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    const { name } = validation.data;
+
+    const project = await prisma.project.update({
+      where: { id: projectId },
+      data: { name },
+    });
+
+    return NextResponse.json({
+      ok: true,
+      data: project,
+    });
+  } catch (error) {
+    console.error('Error updating project:', error);
+    return NextResponse.json(
+      {
+        ok: false,
+        error: { message: 'Failed to update project' },
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ projectId: string }> }
+) {
+  try {
+    const { projectId } = await params;
+
+    await prisma.project.delete({
+      where: { id: projectId },
+    });
+
+    return NextResponse.json({
+      ok: true,
+      data: { deleted: true },
+    });
+  } catch (error) {
+    console.error('Error deleting project:', error);
+    return NextResponse.json(
+      {
+        ok: false,
+        error: { message: 'Failed to delete project' },
       },
       { status: 500 }
     );

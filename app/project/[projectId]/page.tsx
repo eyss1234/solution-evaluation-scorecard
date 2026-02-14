@@ -8,6 +8,9 @@ import { formatDate } from '@/lib/format';
 import { calculateRunComparison, type ScorecardRunInput } from '@/domain/scorecard/compare';
 import { ScorecardComparison } from '@/components/ScorecardComparison';
 import { STEPS } from '@/lib/steps';
+import { EditProjectName } from '@/components/EditProjectName';
+import { DeleteProjectButton } from '@/components/DeleteProjectButton';
+import { ScorecardActions } from '@/components/ScorecardActions';
 
 interface ProjectPageProps {
   params: Promise<{ projectId: string }>;
@@ -89,8 +92,15 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             </svg>
             Back to Projects
           </Link>
-          <h1 className="text-3xl sm:text-4xl font-bold text-zinc-900 mt-2">{project.name}</h1>
-          <p className="text-zinc-500 mt-2">Created {formatDate(project.createdAt)}</p>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <EditProjectName projectId={projectId} currentName={project.name} />
+              <p className="text-zinc-500 mt-2">Created {formatDate(project.createdAt)}</p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <DeleteProjectButton projectId={projectId} projectName={project.name} />
+            </div>
+          </div>
         </div>
 
         {/* Gating Status Card */}
@@ -179,22 +189,24 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               </div>
             ) : (
               <div className="space-y-3">
-                {project.scorecardRuns.map((run: { id: string; scores: unknown[]; createdAt: Date }, index: number) => (
-                  <Link key={run.id} href={`/scorecard/${run.id}/step/1`}>
-                    <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-200 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all cursor-pointer">
-                      <div>
-                        <p className="font-medium text-zinc-900">
-                          Scorecard #{project.scorecardRuns.length - index}
-                        </p>
-                        <p className="text-sm text-zinc-500">
-                          {run.scores.length > 0 ? `${run.scores.length} questions answered` : 'Not started'} • {formatDate(run.createdAt)}
-                        </p>
-                      </div>
-                      <svg className="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {project.scorecardRuns.map((run: { id: string; name: string | null; scores: unknown[]; createdAt: Date }, index: number) => (
+                  <div key={run.id} className="p-4 rounded-xl border border-zinc-200">
+                    <ScorecardActions 
+                      runId={run.id} 
+                      currentName={run.name} 
+                      createdAt={run.createdAt}
+                      fallbackName={`Scorecard #${project.scorecardRuns.length - index}`}
+                    />
+                    <p className="text-sm text-zinc-500 mt-1">
+                      {run.scores.length > 0 ? `${run.scores.length} questions answered` : 'Not started'} • {formatDate(run.createdAt)}
+                    </p>
+                    <Link href={`/scorecard/${run.id}/step/1`} className="inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-700 font-medium mt-2">
+                      View scorecard
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
-                    </div>
-                  </Link>
+                    </Link>
+                  </div>
                 ))}
               </div>
             )}
