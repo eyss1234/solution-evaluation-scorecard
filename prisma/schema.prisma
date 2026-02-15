@@ -15,8 +15,10 @@ model Project {
   name      String
   createdAt DateTime @default(now())
 
-  gatingRuns    GatingRun[]
-  scorecardRuns ScorecardRun[]
+  gatingRuns          GatingRun[]
+  scorecardRuns       ScorecardRun[]
+  financialEntries    FinancialEntry[]
+  financialSettings   ProjectFinancialSettings?
 
   @@map("projects")
 }
@@ -78,8 +80,9 @@ model ScorecardRun {
   name      String?
   createdAt DateTime @default(now())
 
-  project Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  scores  ScorecardScore[]
+  project        Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  scores         ScorecardScore[]
+  financialCosts FinancialCost[]
 
   @@map("scorecard_runs")
 }
@@ -96,4 +99,57 @@ model ScorecardScore {
 
   @@unique([runId, questionId])
   @@map("scorecard_scores")
+}
+
+enum Currency {
+  GBP
+  USD
+  EUR
+}
+
+enum CostCategory {
+  IMPLEMENTATION_CAPEX
+  IMPLEMENTATION_OPEX
+  ONGOING_CAPEX
+  ONGOING_OPEX
+}
+
+model ProjectFinancialSettings {
+  id        String   @id @default(cuid())
+  projectId String   @unique
+  currency  Currency @default(GBP)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_financial_settings")
+}
+
+model FinancialEntry {
+  id        String       @id @default(cuid())
+  projectId String
+  name      String
+  category  CostCategory
+  order     Int
+  createdAt DateTime     @default(now())
+
+  project Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  costs   FinancialCost[]
+
+  @@map("financial_entries")
+}
+
+model FinancialCost {
+  id             String   @id @default(cuid())
+  entryId        String
+  scorecardRunId String
+  amount         Decimal  @db.Decimal(15, 2)
+  createdAt      DateTime @default(now())
+
+  entry        FinancialEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  scorecardRun ScorecardRun   @relation(fields: [scorecardRunId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, scorecardRunId])
+  @@map("financial_costs")
 }

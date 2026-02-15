@@ -42,6 +42,15 @@ export async function GET(
             },
           },
         },
+        financialEntries: {
+          include: {
+            costs: true,
+          },
+          orderBy: {
+            order: 'asc',
+          },
+        },
+        financialSettings: true,
       },
     });
 
