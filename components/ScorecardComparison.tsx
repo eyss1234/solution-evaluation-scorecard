@@ -59,11 +59,11 @@ export function ScorecardComparison({ comparisonData }: ScorecardComparisonProps
       <table className="w-full border-collapse">
         <thead>
           <tr className="border-b-2 border-zinc-200">
-            <th className="text-left py-3 px-4 font-semibold text-zinc-900 bg-zinc-50 sticky left-0 z-10">
+            <th className="text-left py-3 px-4 font-semibold text-zinc-900 bg-zinc-50 sticky left-0 z-10 cursor-default">
               Step
             </th>
             {runs.map((run, index) => (
-              <th key={run.runId} className="text-center py-3 px-4 font-semibold text-zinc-900 bg-zinc-50 min-w-[140px]">
+              <th key={run.runId} className="text-center py-3 px-4 font-semibold text-zinc-900 bg-zinc-50 min-w-[140px] cursor-default">
                 <div className="text-sm">{run.name || `Scorecard ${runs.length - index}`}</div>
               </th>
             ))}
@@ -76,7 +76,7 @@ export function ScorecardComparison({ comparisonData }: ScorecardComparisonProps
 
             return (
               <tr key={stepNumber} className="border-b border-zinc-100 hover:bg-zinc-50/50">
-                <td className="py-4 px-4 font-medium text-zinc-900 bg-white sticky left-0 z-10">
+                <td className="py-4 px-4 font-medium text-zinc-900 bg-white sticky left-0 z-10 cursor-default">
                   <div className="text-sm">{step.name} ({step.sectionWeight}%)</div>
                 </td>
                 {runs.map((run) => {
@@ -98,7 +98,7 @@ export function ScorecardComparison({ comparisonData }: ScorecardComparisonProps
             );
           })}
           <tr className="border-t-2 border-zinc-200 bg-zinc-50 font-semibold">
-            <td className="py-4 px-4 text-zinc-900 sticky left-0 z-10 bg-zinc-50">
+            <td className="py-4 px-4 text-zinc-900 sticky left-0 z-10 bg-zinc-50 cursor-default">
               Overall Total
             </td>
             {runs.map((run) => (

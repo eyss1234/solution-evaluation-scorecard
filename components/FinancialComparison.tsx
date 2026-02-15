@@ -235,14 +235,14 @@ export function FinancialComparison({
             ))}
           </tr>
         )}
-        <tr className="bg-zinc-50 font-semibold border-b-2 border-zinc-200">
-          <td className="py-3 px-4 text-sm text-zinc-900 sticky left-0 z-10 bg-zinc-50">
+        <tr className="font-bold border-b-2 border-zinc-300">
+          <td className="py-3 px-4 text-sm text-zinc-900 sticky left-0 z-10 bg-white cursor-default">
             {title} Sub-total
           </td>
           {scorecardRuns.map((run) => {
             const total = calculateSectionTotal(entries, category, run.id);
             return (
-              <td key={run.id} className="py-3 px-4 text-right text-sm text-zinc-900">
+              <td key={run.id} className="py-3 px-4 text-right text-sm font-bold text-zinc-900">
                 {formatCurrency(total, currency)}
               </td>
             );
@@ -266,10 +266,10 @@ export function FinancialComparison({
         <table className="w-full border-collapse">
           <thead>
             <tr className="border-b-2 border-zinc-200">
-              <th className="text-left py-3 px-4 font-semibold text-zinc-900 bg-zinc-50 sticky left-0 z-10 min-w-[200px]">
+              <th className="text-left py-3 px-4 font-semibold text-zinc-900 bg-zinc-50 sticky left-0 z-10 min-w-[200px] cursor-default">
               </th>
               {scorecardRuns.map((run, index) => (
-                <th key={run.id} className="text-right py-3 px-4 font-semibold text-zinc-900 bg-zinc-50 min-w-[140px]">
+                <th key={run.id} className="text-right py-3 px-4 font-semibold text-zinc-900 bg-zinc-50 min-w-[140px] cursor-default">
                   <div className="text-sm">{run.name || `Scorecard ${scorecardRuns.length - index}`}</div>
                 </th>
               ))}
@@ -277,20 +277,20 @@ export function FinancialComparison({
           </thead>
           <tbody>
             <tr className="bg-indigo-100">
-              <td colSpan={scorecardRuns.length + 1} className="py-2 px-4 text-sm font-bold text-indigo-900">
+              <td colSpan={scorecardRuns.length + 1} className="py-2 px-4 text-sm font-bold text-indigo-900 cursor-default">
                 Implementation Costs
               </td>
             </tr>
             {renderSection('Capital Expenditure', 'IMPLEMENTATION_CAPEX')}
             {renderSection('Operational Expenditure', 'IMPLEMENTATION_OPEX')}
-            <tr className="bg-indigo-50 font-bold border-y-2 border-indigo-200">
-              <td className="py-3 px-4 text-sm text-indigo-900 sticky left-0 z-10 bg-indigo-50">
+            <tr className="bg-amber-50 font-bold border-y-2 border-amber-200">
+              <td className="py-4 px-4 text-base text-amber-900 sticky left-0 z-10 bg-amber-50 cursor-default">
                 Implementation Costs Total
               </td>
               {scorecardRuns.map((run) => {
                 const total = calculateImplementationTotal(entries, run.id);
                 return (
-                  <td key={run.id} className="py-3 px-4 text-right text-sm text-indigo-900">
+                  <td key={run.id} className="py-4 px-4 text-right text-base font-bold text-amber-900">
                     {formatCurrency(total, currency)}
                   </td>
                 );
@@ -302,34 +302,34 @@ export function FinancialComparison({
             </tr>
 
             <tr className="bg-indigo-100">
-              <td colSpan={scorecardRuns.length + 1} className="py-2 px-4 text-sm font-bold text-indigo-900">
+              <td colSpan={scorecardRuns.length + 1} className="py-2 px-4 text-sm font-bold text-indigo-900 cursor-default">
                 3-Year Ongoing Costs
               </td>
             </tr>
             {renderSection('Capital Expenditure', 'ONGOING_CAPEX')}
             {renderSection('Operational Expenditure', 'ONGOING_OPEX')}
-            <tr className="bg-indigo-50 font-bold border-y-2 border-indigo-200">
-              <td className="py-3 px-4 text-sm text-indigo-900 sticky left-0 z-10 bg-indigo-50">
+            <tr className="bg-amber-50 font-bold border-y-2 border-amber-200">
+              <td className="py-4 px-4 text-base text-amber-900 sticky left-0 z-10 bg-amber-50 cursor-default">
                 3-Year Ongoing Costs Total
               </td>
               {scorecardRuns.map((run) => {
                 const total = calculateOngoingTotal(entries, run.id);
                 return (
-                  <td key={run.id} className="py-3 px-4 text-right text-sm text-indigo-900">
+                  <td key={run.id} className="py-4 px-4 text-right text-base font-bold text-amber-900">
                     {formatCurrency(total, currency)}
                   </td>
                 );
               })}
             </tr>
 
-            <tr className="bg-indigo-600 text-white font-bold border-y-2 border-indigo-700">
-              <td className="py-4 px-4 text-base sticky left-0 z-10 bg-indigo-600">
+            <tr className="bg-indigo-700 text-white font-bold border-y-2 border-indigo-800">
+              <td className="py-5 px-4 text-lg sticky left-0 z-10 bg-indigo-700 cursor-default">
                 Grand Total
               </td>
               {scorecardRuns.map((run) => {
                 const total = calculateGrandTotal(entries, run.id);
                 return (
-                  <td key={run.id} className="py-4 px-4 text-right text-base">
+                  <td key={run.id} className="py-5 px-4 text-right text-lg font-bold">
                     {formatCurrency(total, currency)}
                   </td>
                 );
