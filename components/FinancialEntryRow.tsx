@@ -14,6 +14,13 @@ interface FinancialEntryRowProps {
   onDelete: (entryId: string) => void;
 }
 
+const formatInputValue = (value: number): string => {
+  return new Intl.NumberFormat('en-GB', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+};
+
 export function FinancialEntryRow({
   entry,
   scorecardRuns,
@@ -35,10 +42,11 @@ export function FinancialEntryRow({
     const initial: Record<string, string> = {};
     entry.costs.forEach(cost => {
       const amount = Number(cost.amount);
-      initial[cost.scorecardRunId] = amount === 0 ? '' : amount.toString();
+      initial[cost.scorecardRunId] = amount === 0 ? '' : formatInputValue(amount);
     });
     return initial;
   });
+  const [focusedInput, setFocusedInput] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -66,16 +74,19 @@ export function FinancialEntryRow({
   };
 
   const handleCostChange = (scorecardRunId: string, value: string) => {
+    // Remove commas for processing
+    const cleanValue = value.replace(/,/g, '');
+    
     // Allow empty string or valid number patterns (including partial like "12." or "12.5")
-    if (value !== '' && !/^\d*\.?\d*$/.test(value)) {
+    if (cleanValue !== '' && !/^\d*\.?\d*$/.test(cleanValue)) {
       return; // Reject invalid input
     }
     
     // Update the input value immediately for responsive typing
-    setInputValues(prev => ({ ...prev, [scorecardRunId]: value }));
+    setInputValues(prev => ({ ...prev, [scorecardRunId]: cleanValue }));
     
     // Parse and update the numeric value
-    const numericValue = parseCurrencyInput(value);
+    const numericValue = parseCurrencyInput(cleanValue);
     
     setCosts(prev => {
       const updatedCosts = { ...prev, [scorecardRunId]: numericValue };
@@ -180,15 +191,30 @@ export function FinancialEntryRow({
         </div>
       </td>
       {scorecardRuns.map((run) => {
-        const inputValue = inputValues[run.id] || '';
+        const isFocused = focusedInput === run.id;
+        const cost = costs[run.id] || 0;
+        const displayValue = isFocused 
+          ? (inputValues[run.id] || '') 
+          : (cost === 0 ? '' : formatInputValue(cost));
+        
         return (
-          <td key={run.id} className="py-3 px-4 text-center">
+          <td key={run.id} className="py-3 px-4 text-right">
             <input
               type="text"
-              value={inputValue}
+              value={displayValue}
               onChange={(e) => handleCostChange(run.id, e.target.value)}
+              onFocus={() => {
+                setFocusedInput(run.id);
+                const rawValue = costs[run.id];
+                setInputValues(prev => ({ ...prev, [run.id]: rawValue === 0 ? '' : rawValue.toString() }));
+              }}
+              onBlur={() => {
+                setFocusedInput(null);
+                const cost = costs[run.id] || 0;
+                setInputValues(prev => ({ ...prev, [run.id]: cost === 0 ? '' : formatInputValue(cost) }));
+              }}
               placeholder="0.00"
-              className="w-full px-2 py-1 text-sm text-right border border-zinc-200 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-24 px-2 py-1 text-sm text-right border border-zinc-200 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ml-auto"
             />
           </td>
         );

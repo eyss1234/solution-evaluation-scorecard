@@ -1,6 +1,5 @@
 'use client';
 
-import { formatDate } from '@/lib/format';
 import { STEPS } from '@/lib/steps';
 import type { RunComparisonData } from '@/domain/scorecard/compare';
 
@@ -9,6 +8,25 @@ interface ScorecardComparisonProps {
     runs: RunComparisonData[];
     allStepNumbers: number[];
   };
+}
+
+function getScoreColor(value: number): string {
+  if (value >= 80) return 'text-green-600';
+  if (value >= 60) return 'text-yellow-600';
+  return 'text-red-600';
+}
+
+function getStepContributionColor(contribution: number, sectionWeight: number): string {
+  // Calculate what percentage of the section weight was achieved
+  const percentage = (contribution / sectionWeight) * 100;
+  if (percentage >= 80) return 'text-green-600';
+  if (percentage >= 60) return 'text-yellow-600';
+  return 'text-red-600';
+}
+
+function formatScore(value: number): string {
+  const rounded = Math.round(value * 10) / 10;
+  return rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(1);
 }
 
 export function ScorecardComparison({ comparisonData }: ScorecardComparisonProps) {
@@ -46,10 +64,7 @@ export function ScorecardComparison({ comparisonData }: ScorecardComparisonProps
             </th>
             {runs.map((run, index) => (
               <th key={run.runId} className="text-center py-3 px-4 font-semibold text-zinc-900 bg-zinc-50 min-w-[140px]">
-                <div className="text-sm">Scorecard {runs.length - index}</div>
-                <div className="text-xs font-normal text-zinc-500 mt-1">
-                  {formatDate(run.createdAt)}
-                </div>
+                <div className="text-sm">{run.name || `Scorecard ${runs.length - index}`}</div>
               </th>
             ))}
           </tr>
@@ -62,10 +77,7 @@ export function ScorecardComparison({ comparisonData }: ScorecardComparisonProps
             return (
               <tr key={stepNumber} className="border-b border-zinc-100 hover:bg-zinc-50/50">
                 <td className="py-4 px-4 font-medium text-zinc-900 bg-white sticky left-0 z-10">
-                  <div className="text-sm">Step {stepNumber}</div>
-                  <div className="text-xs text-zinc-500 font-normal mt-0.5">
-                    {step.name}
-                  </div>
+                  <div className="text-sm">{step.name} ({step.sectionWeight}%)</div>
                 </td>
                 {runs.map((run) => {
                   const stepScore = run.stepScores.find((s) => s.stepNumber === stepNumber);
@@ -73,13 +85,8 @@ export function ScorecardComparison({ comparisonData }: ScorecardComparisonProps
                   return (
                     <td key={run.runId} className="py-4 px-4 text-center">
                       {stepScore ? (
-                        <div>
-                          <div className="text-lg font-bold text-indigo-600">
-                            {stepScore.weightedScore.toFixed(1)}
-                          </div>
-                          <div className="text-xs text-zinc-400 mt-1">
-                            raw: {stepScore.rawTotal}
-                          </div>
+                        <div className={`text-lg font-bold ${getStepContributionColor((stepScore.weightedScore * stepScore.sectionWeight) / 100, stepScore.sectionWeight)}`}>
+                          {formatScore((stepScore.weightedScore * stepScore.sectionWeight) / 100)}
                         </div>
                       ) : (
                         <div className="text-zinc-300 text-sm">—</div>
@@ -96,11 +103,8 @@ export function ScorecardComparison({ comparisonData }: ScorecardComparisonProps
             </td>
             {runs.map((run) => (
               <td key={run.runId} className="py-4 px-4 text-center">
-                <div className="text-xl font-bold text-indigo-600">
-                  {run.overall.weightedScore.toFixed(1)}
-                </div>
-                <div className="text-xs text-zinc-500 mt-1">
-                  raw: {run.overall.rawTotal}
+                <div className={`text-xl font-bold ${getScoreColor(run.overall.weightedScore)}`}>
+                  {formatScore(run.overall.weightedScore)}
                 </div>
               </td>
             ))}

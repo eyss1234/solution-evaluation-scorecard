@@ -77,7 +77,7 @@ export function GatingForm({ questions, projectId }: GatingFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-5 pt-20">
       {/* Progress indicator */}
-      <div className="sticky top-4 z-20 bg-white/95 backdrop-blur-sm rounded-2xl shadow-sm border border-zinc-100 p-4 -mt-20 mb-6">
+      <div className="sticky top-20 z-20 bg-white/95 backdrop-blur-sm rounded-2xl shadow-sm border border-zinc-100 p-4 -mt-20 mb-6">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-zinc-700">Progress</span>
           <span className="text-sm font-semibold text-indigo-600">
@@ -93,13 +93,13 @@ export function GatingForm({ questions, projectId }: GatingFormProps) {
       </div>
 
       {/* Background cover to hide cards in the gap */}
-      <div className="fixed -top-5 left-0 right-0 h-20 bg-zinc-50 z-10" />
+      <div className="fixed top-6 left-0 right-0 h-[88px] bg-zinc-50 z-10" />
 
       {/* Visual separator layer */}
       <div className="h-px bg-gradient-to-r from-transparent via-zinc-200 to-transparent mb-6" />
 
       {questions.map((question, index) => (
-        <Card key={question.id}>
+        <Card key={question.id} className="relative z-0">
           <div className="flex items-start gap-4">
             <span className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-50 text-indigo-700 font-semibold flex items-center justify-center text-sm">
               {index + 1}

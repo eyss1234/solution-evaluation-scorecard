@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { CurrencySelector } from './CurrencySelector';
 import { FinancialEntryRow } from './FinancialEntryRow';
 import { formatCurrency, type Currency } from '@/domain/financial/format';
-import { formatDate } from '@/lib/format';
 import {
   calculateImplementationTotal,
   calculateOngoingTotal,
@@ -243,7 +242,7 @@ export function FinancialComparison({
           {scorecardRuns.map((run) => {
             const total = calculateSectionTotal(entries, category, run.id);
             return (
-              <td key={run.id} className="py-3 px-4 text-center text-sm text-zinc-900">
+              <td key={run.id} className="py-3 px-4 text-right text-sm text-zinc-900">
                 {formatCurrency(total, currency)}
               </td>
             );
@@ -268,14 +267,10 @@ export function FinancialComparison({
           <thead>
             <tr className="border-b-2 border-zinc-200">
               <th className="text-left py-3 px-4 font-semibold text-zinc-900 bg-zinc-50 sticky left-0 z-10 min-w-[200px]">
-                Cost Item
               </th>
               {scorecardRuns.map((run, index) => (
-                <th key={run.id} className="text-center py-3 px-4 font-semibold text-zinc-900 bg-zinc-50 min-w-[140px]">
-                  <div className="text-sm">Scorecard {scorecardRuns.length - index}</div>
-                  <div className="text-xs font-normal text-zinc-500 mt-1">
-                    {formatDate(run.createdAt)}
-                  </div>
+                <th key={run.id} className="text-right py-3 px-4 font-semibold text-zinc-900 bg-zinc-50 min-w-[140px]">
+                  <div className="text-sm">{run.name || `Scorecard ${scorecardRuns.length - index}`}</div>
                 </th>
               ))}
             </tr>
@@ -295,7 +290,7 @@ export function FinancialComparison({
               {scorecardRuns.map((run) => {
                 const total = calculateImplementationTotal(entries, run.id);
                 return (
-                  <td key={run.id} className="py-3 px-4 text-center text-sm text-indigo-900">
+                  <td key={run.id} className="py-3 px-4 text-right text-sm text-indigo-900">
                     {formatCurrency(total, currency)}
                   </td>
                 );
@@ -320,7 +315,7 @@ export function FinancialComparison({
               {scorecardRuns.map((run) => {
                 const total = calculateOngoingTotal(entries, run.id);
                 return (
-                  <td key={run.id} className="py-3 px-4 text-center text-sm text-indigo-900">
+                  <td key={run.id} className="py-3 px-4 text-right text-sm text-indigo-900">
                     {formatCurrency(total, currency)}
                   </td>
                 );
@@ -334,7 +329,7 @@ export function FinancialComparison({
               {scorecardRuns.map((run) => {
                 const total = calculateGrandTotal(entries, run.id);
                 return (
-                  <td key={run.id} className="py-4 px-4 text-center text-base">
+                  <td key={run.id} className="py-4 px-4 text-right text-base">
                     {formatCurrency(total, currency)}
                   </td>
                 );
