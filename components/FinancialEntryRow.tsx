@@ -14,6 +14,13 @@ interface FinancialEntryRowProps {
   onDelete: (entryId: string) => void;
 }
 
+const formatInputValue = (value: number): string => {
+  return new Intl.NumberFormat('en-GB', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+};
+
 export function FinancialEntryRow({
   entry,
   scorecardRuns,
@@ -26,19 +33,22 @@ export function FinancialEntryRow({
   const [name, setName] = useState(entry.name);
   const [costs, setCosts] = useState<Record<string, number>>(() => {
     const initial: Record<string, number> = {};
-    entry.costs.forEach(cost => {
-      initial[cost.scorecardRunId] = Number(cost.amount);
+    scorecardRuns.forEach(run => {
+      const existingCost = entry.costs.find(c => c.scorecardRunId === run.id);
+      initial[run.id] = existingCost ? Number(existingCost.amount) : 0;
     });
     return initial;
   });
   const [inputValues, setInputValues] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
-    entry.costs.forEach(cost => {
-      const amount = Number(cost.amount);
-      initial[cost.scorecardRunId] = amount === 0 ? '' : amount.toString();
+    scorecardRuns.forEach(run => {
+      const existingCost = entry.costs.find(c => c.scorecardRunId === run.id);
+      const amount = existingCost ? Number(existingCost.amount) : 0;
+      initial[run.id] = amount === 0 ? '' : formatInputValue(amount);
     });
     return initial;
   });
+  const [focusedInput, setFocusedInput] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -66,16 +76,19 @@ export function FinancialEntryRow({
   };
 
   const handleCostChange = (scorecardRunId: string, value: string) => {
+    // Remove commas for processing
+    const cleanValue = value.replace(/,/g, '');
+    
     // Allow empty string or valid number patterns (including partial like "12." or "12.5")
-    if (value !== '' && !/^\d*\.?\d*$/.test(value)) {
+    if (cleanValue !== '' && !/^\d*\.?\d*$/.test(cleanValue)) {
       return; // Reject invalid input
     }
     
     // Update the input value immediately for responsive typing
-    setInputValues(prev => ({ ...prev, [scorecardRunId]: value }));
+    setInputValues(prev => ({ ...prev, [scorecardRunId]: cleanValue }));
     
     // Parse and update the numeric value
-    const numericValue = parseCurrencyInput(value);
+    const numericValue = parseCurrencyInput(cleanValue);
     
     setCosts(prev => {
       const updatedCosts = { ...prev, [scorecardRunId]: numericValue };
@@ -180,16 +193,42 @@ export function FinancialEntryRow({
         </div>
       </td>
       {scorecardRuns.map((run) => {
-        const inputValue = inputValues[run.id] || '';
+        const isEditing = focusedInput === run.id;
+        const cost = costs[run.id] || 0;
+        
         return (
-          <td key={run.id} className="py-3 px-4 text-center">
-            <input
-              type="text"
-              value={inputValue}
-              onChange={(e) => handleCostChange(run.id, e.target.value)}
-              placeholder="0.00"
-              className="w-full px-2 py-1 text-sm text-right border border-zinc-200 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-            />
+          <td key={run.id} className="py-3 px-4 text-right">
+            {isEditing ? (
+              <input
+                type="text"
+                value={inputValues[run.id] || ''}
+                onChange={(e) => handleCostChange(run.id, e.target.value)}
+                onBlur={() => {
+                  setFocusedInput(null);
+                  const cost = costs[run.id] || 0;
+                  setInputValues(prev => ({ ...prev, [run.id]: cost === 0 ? '' : formatInputValue(cost) }));
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === 'Escape') {
+                    e.currentTarget.blur();
+                  }
+                }}
+                autoFocus
+                placeholder="0.00"
+                className="w-24 px-2 py-1 text-sm text-right border border-zinc-200 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ml-auto"
+              />
+            ) : (
+              <button
+                onClick={() => {
+                  setFocusedInput(run.id);
+                  const rawValue = costs[run.id];
+                  setInputValues(prev => ({ ...prev, [run.id]: rawValue === 0 ? '' : rawValue.toString() }));
+                }}
+                className="w-full text-right text-sm text-zinc-900 hover:text-indigo-600 px-2 py-1 rounded hover:bg-zinc-50 transition-colors"
+              >
+                {cost === 0 ? '—' : formatInputValue(cost)}
+              </button>
+            )}
           </td>
         );
       })}

@@ -6,6 +6,11 @@ import { ScorecardTitle, ScorecardActions } from './ScorecardActions';
 import { formatDate } from '@/lib/format';
 import type { RunComparisonData } from '@/domain/scorecard/compare';
 
+function formatScore(value: number): string {
+  const rounded = Math.round(value * 10) / 10;
+  return rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(1);
+}
+
 interface ScorecardItemProps {
   run: {
     id: string;
@@ -63,7 +68,7 @@ export function ScorecardItem({ run, runComparison, index, totalScorecards }: Sc
             runComparison.overall.weightedScore >= 60 ? 'text-yellow-600' :
             'text-red-600'
           }`}>
-            {runComparison.overall.weightedScore.toFixed(1)}
+            {formatScore(runComparison.overall.weightedScore)}
           </span>
           <span className="text-xs text-zinc-400 ml-1">/100</span>
         </div>

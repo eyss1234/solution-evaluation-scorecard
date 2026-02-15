@@ -213,7 +213,14 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               </div>
             ) : (
               <div className="space-y-3">
-                {project.scorecardRuns.map((run: { id: string; name: string | null; scores: unknown[]; createdAt: Date }, index: number) => {
+                {[...project.scorecardRuns]
+                  .sort((a, b) => {
+                    if (a.name && b.name) return a.name.localeCompare(b.name);
+                    if (a.name && !b.name) return -1;
+                    if (!a.name && b.name) return 1;
+                    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+                  })
+                  .map((run: { id: string; name: string | null; scores: unknown[]; createdAt: Date }, index: number) => {
                   const runComparison = comparisonData.runs.find(r => r.runId === run.id);
                   
                   return (
@@ -245,7 +252,12 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             <h2 className="text-xl font-semibold text-zinc-900 mb-4">Financial Comparison</h2>
             <FinancialComparison
               projectId={projectId}
-              scorecardRuns={project.scorecardRuns}
+              scorecardRuns={[...project.scorecardRuns].sort((a, b) => {
+                if (a.name && b.name) return a.name.localeCompare(b.name);
+                if (a.name && !b.name) return -1;
+                if (!a.name && b.name) return 1;
+                return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+              })}
               initialEntries={financialEntries}
               initialCurrency={currency}
             />

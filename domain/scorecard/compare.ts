@@ -9,10 +9,12 @@ export interface StepScore {
   stepNumber: number;
   weightedScore: number; // 0-100
   rawTotal: number; // sum of 0-5 values
+  sectionWeight: number; // percentage weight of this step
 }
 
 export interface RunComparisonData {
   runId: string;
+  name: string | null;
   createdAt: Date;
   stepScores: StepScore[];
   overall: {
@@ -28,6 +30,7 @@ export interface ComparisonResult {
 
 export interface ScorecardRunInput {
   id: string;
+  name: string | null;
   createdAt: Date;
   scores: Array<{
     questionId: string;
@@ -90,10 +93,12 @@ export function calculateRunComparison(
         // Calculate raw total (sum of all score values)
         const rawTotal = scores.reduce((sum, s) => sum + s.value, 0);
 
+        const sectionWeight = sectionWeights.get(stepNumber) || 0;
         stepScores.push({
           stepNumber,
           weightedScore: sectionScore.weightedScore,
           rawTotal,
+          sectionWeight,
         });
       }
     }
@@ -106,6 +111,7 @@ export function calculateRunComparison(
 
     runComparisonData.push({
       runId: run.id,
+      name: run.name,
       createdAt: run.createdAt,
       stepScores,
       overall: {
@@ -114,6 +120,14 @@ export function calculateRunComparison(
       },
     });
   }
+
+  // Sort runs by name (nulls last), then by creation date
+  runComparisonData.sort((a, b) => {
+    if (a.name && b.name) return a.name.localeCompare(b.name);
+    if (a.name && !b.name) return -1;
+    if (!a.name && b.name) return 1;
+    return a.createdAt.getTime() - b.createdAt.getTime();
+  });
 
   return {
     runs: runComparisonData,
