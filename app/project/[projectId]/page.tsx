@@ -11,6 +11,8 @@ import { STEPS } from '@/lib/steps';
 import { EditProjectName } from '@/components/EditProjectName';
 import { DeleteProjectButton } from '@/components/DeleteProjectButton';
 import { ScorecardItem } from '@/components/ScorecardItem';
+import { FinancialComparison } from '@/components/FinancialComparison';
+import type { Currency } from '@/domain/financial/format';
 
 interface ProjectPageProps {
   params: Promise<{ projectId: string }>;
@@ -47,6 +49,15 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           },
         },
       },
+      financialEntries: {
+        include: {
+          costs: true,
+        },
+        orderBy: {
+          order: 'asc',
+        },
+      },
+      financialSettings: true,
     },
   });
 
@@ -80,6 +91,16 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     completedScorecardRuns as ScorecardRunInput[],
     sectionWeights
   );
+
+  const financialEntries = project.financialEntries.map((entry) => ({
+    ...entry,
+    costs: entry.costs.map((cost) => ({
+      ...cost,
+      amount: Number(cost.amount),
+    })),
+  }));
+
+  const currency: Currency = project.financialSettings?.currency || 'GBP';
 
   return (
     <main className="min-h-screen bg-zinc-50 py-8 px-4 sm:py-12">
@@ -212,9 +233,22 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
         {/* Scorecard Comparison Section */}
         {gatingStatus === 'passed' && (
-          <Card>
+          <Card className="mb-6">
             <h2 className="text-xl font-semibold text-zinc-900 mb-4">Scorecard Comparison</h2>
             <ScorecardComparison comparisonData={comparisonData} />
+          </Card>
+        )}
+
+        {/* Financial Comparison Section */}
+        {gatingStatus === 'passed' && (
+          <Card>
+            <h2 className="text-xl font-semibold text-zinc-900 mb-4">Financial Comparison</h2>
+            <FinancialComparison
+              projectId={projectId}
+              scorecardRuns={project.scorecardRuns}
+              initialEntries={financialEntries}
+              initialCurrency={currency}
+            />
           </Card>
         )}
       </div>
