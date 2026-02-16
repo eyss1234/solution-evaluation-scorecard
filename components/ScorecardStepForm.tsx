@@ -20,10 +20,11 @@ interface ScorecardStepFormProps {
 
 export function ScorecardStepForm({ stepNumber }: ScorecardStepFormProps) {
   const router = useRouter();
-  const { scores, setScore, getStepQuestions, isStepComplete, runId } = useScorecard();
+  const { scores, setScore, stepComments, setStepComment: setContextStepComment, getStepQuestions, isStepComplete, runId } = useScorecard();
   const step = getStep(stepNumber);
   const questions = getStepQuestions(stepNumber);
   const [isSaving, setIsSaving] = useState(false);
+  const [localStepComment, setLocalStepComment] = useState(stepComments[stepNumber] || '');
 
   if (!step) return null;
 
@@ -48,7 +49,11 @@ export function ScorecardStepForm({ stepNumber }: ScorecardStepFormProps) {
         const response = await fetch(`/api/scorecard/${runId}/save`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ scores: stepScores }),
+          body: JSON.stringify({ 
+            scores: stepScores,
+            stepComment: localStepComment.trim() || undefined,
+            stepNumber,
+          }),
         });
 
         const data = await response.json();
@@ -56,6 +61,10 @@ export function ScorecardStepForm({ stepNumber }: ScorecardStepFormProps) {
           console.error('[StepForm] Failed to save progress:', data.error);
         } else {
           console.log('[StepForm] Successfully saved:', data.data);
+          // Update context with step comment
+          if (localStepComment.trim()) {
+            setContextStepComment(stepNumber, localStepComment.trim());
+          }
         }
       }
     } catch (error) {
@@ -142,6 +151,21 @@ export function ScorecardStepForm({ stepNumber }: ScorecardStepFormProps) {
             </div>
           );
         })}
+      </div>
+
+      {/* Step Comments Card */}
+      <div className="bg-white rounded-2xl shadow-sm border border-zinc-100 p-8">
+        <h3 className="text-lg font-medium text-zinc-900 mb-4">Comments</h3>
+        <p className="text-sm text-zinc-500 mb-3">
+          Add any general comments or notes about this step (optional)
+        </p>
+        <textarea
+          value={localStepComment}
+          onChange={(e) => setLocalStepComment(e.target.value)}
+          placeholder="Enter your comments here..."
+          rows={4}
+          className="w-full px-4 py-3 text-sm border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+        />
       </div>
 
       {/* Navigation */}

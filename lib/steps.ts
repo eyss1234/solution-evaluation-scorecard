@@ -49,6 +49,13 @@ export const STEPS: StepDefinition[] = [
     sectionWeight: 15,
     questionsPerStep: 3,
   },
+  {
+    number: 7,
+    name: 'Overview',
+    description: 'Optional summary of pros, cons, and overall assessment',
+    sectionWeight: 0,
+    questionsPerStep: 0,
+  },
 ];
 
 export const TOTAL_STEPS = STEPS.length;

@@ -16,6 +16,15 @@ import {
   type FinancialEntry,
 } from '@/domain/financial/calculate';
 
+const SCALE_LABELS: Record<number, string> = {
+  0: 'N/A',
+  1: 'Very Poor',
+  2: 'Poor',
+  3: 'Adequate',
+  4: 'Good',
+  5: 'Excellent',
+};
+
 interface GatingAnswer {
   question: {
     text: string;
@@ -456,6 +465,167 @@ export function ExportProjectPdfButton({
           });
 
           yPosition = (doc as any).lastAutoTable.finalY + 15;
+        }
+      }
+
+      // Add detailed scorecard breakdowns with comments and overview
+      if (scorecardRuns.length > 0) {
+        for (const run of scorecardRuns) {
+          try {
+            // Fetch detailed data for this scorecard
+            const response = await fetch(`/api/scorecard/${run.id}/export-data`);
+            const data = await response.json();
+            
+            if (data.ok && data.data) {
+              const detailedRun = data.data;
+              
+              doc.addPage();
+              yPosition = 20;
+              
+              yPosition = addSectionHeader(doc, `Detailed Scorecard: ${run.name || 'Unnamed'}`, yPosition);
+              
+              // Group scores by step
+              const scoresByStep = new Map<number, any[]>();
+              detailedRun.scores.forEach((score: any) => {
+                const stepNum = score.question.stepNumber;
+                if (!scoresByStep.has(stepNum)) {
+                  scoresByStep.set(stepNum, []);
+                }
+                scoresByStep.get(stepNum)!.push(score);
+              });
+              
+              // Render each step
+              for (const step of STEPS.filter(s => s.questionsPerStep > 0)) {
+                const stepScores = scoresByStep.get(step.number) || [];
+                if (stepScores.length === 0) continue;
+                
+                // Check if we need a new page
+                if (yPosition > 240) {
+                  doc.addPage();
+                  yPosition = 20;
+                }
+                
+                // Step header
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(79, 70, 229);
+                doc.text(`Step ${step.number}: ${step.name}`, 10, yPosition);
+                yPosition += 7;
+                
+                // Questions and scores
+                for (const score of stepScores) {
+                  // Check page space
+                  if (yPosition > 260) {
+                    doc.addPage();
+                    yPosition = 20;
+                  }
+                  
+                  doc.setFontSize(9);
+                  doc.setFont('helvetica', 'normal');
+                  doc.setTextColor(63, 63, 70);
+                  
+                  // Question text (wrapped)
+                  const questionLines = doc.splitTextToSize(score.question.text, 150);
+                  doc.text(questionLines, 15, yPosition);
+                  yPosition += questionLines.length * 5;
+                  
+                  // Score
+                  doc.setFont('helvetica', 'bold');
+                  const scoreLabel = `Score: ${score.value} - ${SCALE_LABELS[score.value] || 'N/A'}`;
+                  doc.text(scoreLabel, 15, yPosition);
+                  yPosition += 8;
+                }
+                
+                // Step comment if exists
+                const stepComment = detailedRun.stepComments?.find((sc: any) => sc.stepNumber === step.number);
+                if (stepComment?.comment) {
+                  if (yPosition > 250) {
+                    doc.addPage();
+                    yPosition = 20;
+                  }
+                  
+                  doc.setFont('helvetica', 'bold');
+                  doc.setFontSize(9);
+                  doc.setTextColor(63, 63, 70);
+                  doc.text('Step Comments:', 15, yPosition);
+                  yPosition += 5;
+                  
+                  doc.setFont('helvetica', 'italic');
+                  doc.setFontSize(8);
+                  doc.setTextColor(113, 113, 122);
+                  const stepCommentLines = doc.splitTextToSize(stepComment.comment, 170);
+                  doc.text(stepCommentLines, 15, yPosition);
+                  yPosition += stepCommentLines.length * 4 + 5;
+                }
+                
+                yPosition += 5;
+              }
+              
+              // Overview section
+              if (detailedRun.overview && (detailedRun.overview.pros || detailedRun.overview.cons || detailedRun.overview.summary)) {
+                if (yPosition > 200) {
+                  doc.addPage();
+                  yPosition = 20;
+                }
+                
+                yPosition = addSectionHeader(doc, 'Overview', yPosition);
+                
+                if (detailedRun.overview.pros) {
+                  doc.setFontSize(10);
+                  doc.setFont('helvetica', 'bold');
+                  doc.setTextColor(63, 63, 70);
+                  doc.text('Pros:', 10, yPosition);
+                  yPosition += 6;
+                  
+                  doc.setFont('helvetica', 'normal');
+                  doc.setFontSize(9);
+                  const prosLines = doc.splitTextToSize(detailedRun.overview.pros, 180);
+                  doc.text(prosLines, 10, yPosition);
+                  yPosition += prosLines.length * 5 + 5;
+                }
+                
+                if (detailedRun.overview.cons) {
+                  if (yPosition > 250) {
+                    doc.addPage();
+                    yPosition = 20;
+                  }
+                  
+                  doc.setFontSize(10);
+                  doc.setFont('helvetica', 'bold');
+                  doc.setTextColor(63, 63, 70);
+                  doc.text('Cons:', 10, yPosition);
+                  yPosition += 6;
+                  
+                  doc.setFont('helvetica', 'normal');
+                  doc.setFontSize(9);
+                  const consLines = doc.splitTextToSize(detailedRun.overview.cons, 180);
+                  doc.text(consLines, 10, yPosition);
+                  yPosition += consLines.length * 5 + 5;
+                }
+                
+                if (detailedRun.overview.summary) {
+                  if (yPosition > 250) {
+                    doc.addPage();
+                    yPosition = 20;
+                  }
+                  
+                  doc.setFontSize(10);
+                  doc.setFont('helvetica', 'bold');
+                  doc.setTextColor(63, 63, 70);
+                  doc.text('Summary:', 10, yPosition);
+                  yPosition += 6;
+                  
+                  doc.setFont('helvetica', 'normal');
+                  doc.setFontSize(9);
+                  const summaryLines = doc.splitTextToSize(detailedRun.overview.summary, 180);
+                  doc.text(summaryLines, 10, yPosition);
+                  yPosition += summaryLines.length * 5 + 5;
+                }
+              }
+            }
+          } catch (error) {
+            console.error(`Error fetching detailed data for scorecard ${run.id}:`, error);
+          }
         }
       }
 

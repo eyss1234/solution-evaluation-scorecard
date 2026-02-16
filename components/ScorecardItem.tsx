@@ -58,7 +58,7 @@ export function ScorecardItem({ run, runComparison, index, totalScorecards }: Sc
       </div>
       <div className="flex items-center gap-3 mt-3">
         <p className="text-sm text-zinc-500">
-          {isCompleted ? `${run.scores.length} questions answered` : 'Not started'} • {formatDate(run.createdAt)}
+          {isCompleted ? 'Completed' : 'Not started'} • {formatDate(run.createdAt)}
         </p>
       </div>
       {isCompleted && runComparison && (

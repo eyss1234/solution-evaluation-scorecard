@@ -17,7 +17,7 @@ const SCALE_LABELS: Record<number, string> = {
 
 export function ScorecardReview() {
   const router = useRouter();
-  const { questions, scores, getStepQuestions, isStepComplete, runId } = useScorecard();
+  const { questions, scores, stepComments, overview, getStepQuestions, isStepComplete, runId } = useScorecard();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -89,6 +89,9 @@ export function ScorecardReview() {
           const stepQuestions = getStepQuestions(step.number);
           const complete = isStepComplete(step.number);
 
+          // Skip Overview step (step 7) in this section
+          if (step.number === 7) return null;
+
           return (
             <div
               key={step.number}
@@ -120,10 +123,7 @@ export function ScorecardReview() {
                   {stepQuestions.map((q) => {
                     const value = scores[q.id];
                     return (
-                      <div
-                        key={q.id}
-                        className="flex items-start gap-3 text-sm"
-                      >
+                      <div key={q.id} className="flex items-start gap-3 text-sm">
                         <span className={`flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold ${getScoreBadgeStyle(value)}`}>
                           {value}
                         </span>
@@ -134,12 +134,59 @@ export function ScorecardReview() {
                       </div>
                     );
                   })}
+                  {stepComments[step.number] && (
+                    <div className="mt-4 pt-4 border-t border-zinc-100">
+                      <p className="text-xs font-semibold text-zinc-700 mb-1">Step Comments:</p>
+                      <p className="text-xs text-zinc-600 italic">{stepComments[step.number]}</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           );
         })}
       </div>
+
+      {/* Overview Section */}
+      {(overview.pros || overview.cons || overview.summary) && (
+        <div className="bg-white rounded-2xl shadow-sm border border-zinc-100 p-8">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <p className="text-sm uppercase tracking-wide text-zinc-500 font-medium">
+                Step 7
+              </p>
+              <h2 className="text-lg font-semibold text-zinc-900 mt-0.5">Overview</h2>
+            </div>
+            <Link
+              href={`/scorecard/${runId}/step/7`}
+              className="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+            >
+              Edit
+            </Link>
+          </div>
+
+          <div className="space-y-4">
+            {overview.pros && (
+              <div>
+                <h3 className="text-sm font-semibold text-zinc-900 mb-2">Pros</h3>
+                <p className="text-sm text-zinc-700 whitespace-pre-wrap">{overview.pros}</p>
+              </div>
+            )}
+            {overview.cons && (
+              <div>
+                <h3 className="text-sm font-semibold text-zinc-900 mb-2">Cons</h3>
+                <p className="text-sm text-zinc-700 whitespace-pre-wrap">{overview.cons}</p>
+              </div>
+            )}
+            {overview.summary && (
+              <div>
+                <h3 className="text-sm font-semibold text-zinc-900 mb-2">Summary</h3>
+                <p className="text-sm text-zinc-700 whitespace-pre-wrap">{overview.summary}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Error */}
       {error && (

@@ -48,6 +48,10 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               question: true,
             },
           },
+          overview: true,
+          stepComments: {
+            orderBy: { stepNumber: 'asc' },
+          },
         },
       },
       financialEntries: {

@@ -42,6 +42,10 @@ export default async function ScorecardPage({ params }: ScorecardPageProps) {
         include: { question: true },
         orderBy: [{ question: { stepNumber: 'asc' } }, { question: { order: 'asc' } }],
       },
+      overview: true,
+      stepComments: {
+        orderBy: { stepNumber: 'asc' },
+      },
     },
   });
 
@@ -122,7 +126,7 @@ export default async function ScorecardPage({ params }: ScorecardPageProps) {
         </Card>
 
         {/* Scorecard Scores by Step */}
-        {hasScorecard && STEPS.map((step) => {
+        {hasScorecard && STEPS.filter(step => step.questionsPerStep > 0).map((step) => {
           const stepScores = scorecardRun.scores.filter((s: any) => s.question.stepNumber === step.number);
           if (stepScores.length === 0) return null;
 
@@ -161,10 +165,50 @@ export default async function ScorecardPage({ params }: ScorecardPageProps) {
                     </span>
                   </div>
                 ))}
+                {scorecardRun.stepComments?.find((sc: any) => sc.stepNumber === step.number)?.comment && (
+                  <div className="mt-4 pt-4 border-t border-zinc-100">
+                    <p className="text-xs font-semibold text-zinc-700 mb-1">Step Comments:</p>
+                    <p className="text-xs text-zinc-600 italic">
+                      {scorecardRun.stepComments.find((sc: any) => sc.stepNumber === step.number)?.comment}
+                    </p>
+                  </div>
+                )}
               </div>
             </Card>
           );
         })}
+
+        {/* Overview Section */}
+        {hasScorecard && scorecardRun.overview && (scorecardRun.overview.pros || scorecardRun.overview.cons || scorecardRun.overview.summary) && (
+          <Card>
+            <div className="mb-5">
+              <p className="text-sm uppercase tracking-wide text-zinc-500 font-medium">
+                Step 7
+              </p>
+              <h2 className="text-lg font-semibold text-zinc-900 mt-0.5">Overview</h2>
+            </div>
+            <div className="space-y-4">
+              {scorecardRun.overview.pros && (
+                <div>
+                  <h3 className="text-sm font-semibold text-zinc-900 mb-2">Pros</h3>
+                  <p className="text-sm text-zinc-700 whitespace-pre-wrap">{scorecardRun.overview.pros}</p>
+                </div>
+              )}
+              {scorecardRun.overview.cons && (
+                <div>
+                  <h3 className="text-sm font-semibold text-zinc-900 mb-2">Cons</h3>
+                  <p className="text-sm text-zinc-700 whitespace-pre-wrap">{scorecardRun.overview.cons}</p>
+                </div>
+              )}
+              {scorecardRun.overview.summary && (
+                <div>
+                  <h3 className="text-sm font-semibold text-zinc-900 mb-2">Summary</h3>
+                  <p className="text-sm text-zinc-700 whitespace-pre-wrap">{scorecardRun.overview.summary}</p>
+                </div>
+              )}
+            </div>
+          </Card>
+        )}
 
         {/* If no scorecard yet, show CTA to start */}
         {!hasScorecard && (
