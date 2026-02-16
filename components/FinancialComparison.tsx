@@ -19,6 +19,7 @@ interface FinancialComparisonProps {
   scorecardRuns: Array<{ id: string; name: string | null; createdAt: Date }>;
   initialEntries: FinancialEntry[];
   initialCurrency: Currency;
+  showTitle?: boolean;
 }
 
 export function FinancialComparison({
@@ -26,6 +27,7 @@ export function FinancialComparison({
   scorecardRuns,
   initialEntries,
   initialCurrency,
+  showTitle = false,
 }: FinancialComparisonProps) {
   const [entries, setEntries] = useState<FinancialEntry[]>(initialEntries);
   const [currency, setCurrency] = useState<Currency>(initialCurrency);
@@ -254,13 +256,24 @@ export function FinancialComparison({
 
   return (
     <div>
-      <div className="flex items-center justify-end mb-4">
-        <CurrencySelector
-          projectId={projectId}
-          currentCurrency={currency}
-          onCurrencyChange={setCurrency}
-        />
-      </div>
+      {showTitle ? (
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-zinc-900">Financial Comparison</h2>
+          <CurrencySelector
+            projectId={projectId}
+            currentCurrency={currency}
+            onCurrencyChange={setCurrency}
+          />
+        </div>
+      ) : (
+        <div className="flex items-center justify-end mb-4">
+          <CurrencySelector
+            projectId={projectId}
+            currentCurrency={currency}
+            onCurrencyChange={setCurrency}
+          />
+        </div>
+      )}
 
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
