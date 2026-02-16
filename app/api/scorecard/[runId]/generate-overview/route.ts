@@ -66,7 +66,6 @@ export async function POST(
           question: s.question.text,
           score: s.value,
           weight: s.question.weight,
-          comment: s.comment || '',
         })),
       };
     });
