@@ -12,21 +12,37 @@ interface ScorecardQuestion {
   criteria: Array<{ score: number; description: string }>;
 }
 
+interface OverviewData {
+  pros?: string;
+  cons?: string;
+  summary?: string;
+}
+
 export function ScorecardShell({
   questions,
   runId,
   projectId,
   initialScores,
+  initialStepComments,
+  initialOverview,
   children,
 }: {
   questions: ScorecardQuestion[];
   runId: string;
   projectId: string;
   initialScores?: Record<string, number>;
+  initialStepComments?: Record<number, string>;
+  initialOverview?: OverviewData;
   children: React.ReactNode;
 }) {
   return (
-    <ScorecardProvider questions={questions} runId={runId} initialScores={initialScores}>
+    <ScorecardProvider 
+      questions={questions} 
+      runId={runId} 
+      initialScores={initialScores}
+      initialStepComments={initialStepComments}
+      initialOverview={initialOverview}
+    >
       <div className="min-h-screen bg-zinc-50">
         <ScorecardSidebar projectId={projectId} />
         {/* Main content area */}

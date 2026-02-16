@@ -9,6 +9,8 @@ const saveSchema = z.object({
       value: z.number().int().min(0).max(5),
     })
   ),
+  stepComment: z.string().optional(),
+  stepNumber: z.number().int().optional(),
 });
 
 export async function POST(
@@ -44,7 +46,7 @@ export async function POST(
       );
     }
 
-    const { scores } = validation.data;
+    const { scores, stepComment, stepNumber } = validation.data;
 
     console.log('[Save API] Saving scores for runId:', runId, 'scores:', scores);
 
@@ -69,6 +71,27 @@ export async function POST(
         })
       )
     );
+
+    // Save step comment if provided
+    if (stepComment && stepNumber !== undefined) {
+      await prisma.scorecardStepComment.upsert({
+        where: {
+          runId_stepNumber: {
+            runId,
+            stepNumber,
+          },
+        },
+        update: {
+          comment: stepComment,
+        },
+        create: {
+          runId,
+          stepNumber,
+          comment: stepComment,
+        },
+      });
+      console.log('[Save API] Saved step comment for step', stepNumber);
+    }
 
     console.log('[Save API] Successfully saved', results.length, 'scores');
 

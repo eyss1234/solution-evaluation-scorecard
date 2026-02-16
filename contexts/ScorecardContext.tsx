@@ -12,10 +12,20 @@ interface ScorecardQuestion {
   criteria: Array<{ score: number; description: string }>;
 }
 
+interface OverviewData {
+  pros?: string;
+  cons?: string;
+  summary?: string;
+}
+
 interface ScorecardContextValue {
   questions: ScorecardQuestion[];
   scores: Record<string, number>;
+  stepComments: Record<number, string>;
+  overview: OverviewData;
   setScore: (questionId: string, value: number) => void;
+  setStepComment: (stepNumber: number, comment: string) => void;
+  setOverview: (overview: OverviewData) => void;
   isStepComplete: (stepNumber: number) => boolean;
   isStepPartiallyComplete: (stepNumber: number) => boolean;
   getStepQuestions: (stepNumber: number) => ScorecardQuestion[];
@@ -30,17 +40,31 @@ export function ScorecardProvider({
   questions,
   runId,
   initialScores = {},
+  initialStepComments = {},
+  initialOverview = {},
   children,
 }: {
   questions: ScorecardQuestion[];
   runId: string;
   initialScores?: Record<string, number>;
+  initialStepComments?: Record<number, string>;
+  initialOverview?: OverviewData;
   children: ReactNode;
 }) {
   const [scores, setScores] = useState<Record<string, number>>(initialScores);
+  const [stepComments, setStepCommentsState] = useState<Record<number, string>>(initialStepComments);
+  const [overview, setOverviewState] = useState<OverviewData>(initialOverview);
 
   const setScore = useCallback((questionId: string, value: number) => {
     setScores((prev) => ({ ...prev, [questionId]: value }));
+  }, []);
+
+  const setStepComment = useCallback((stepNumber: number, comment: string) => {
+    setStepCommentsState((prev) => ({ ...prev, [stepNumber]: comment }));
+  }, []);
+
+  const setOverview = useCallback((newOverview: OverviewData) => {
+    setOverviewState(newOverview);
   }, []);
 
   const getStepQuestions = useCallback(
@@ -52,6 +76,9 @@ export function ScorecardProvider({
 
   const isStepComplete = useCallback(
     (stepNumber: number): boolean => {
+      // Step 7 (Overview) is always complete since all fields are optional
+      if (stepNumber === 7) return true;
+      
       const stepQuestions = getStepQuestions(stepNumber);
       return stepQuestions.length > 0 && stepQuestions.every((q) => scores[q.id] !== undefined);
     },
@@ -99,7 +126,11 @@ export function ScorecardProvider({
       value={{
         questions,
         scores,
+        stepComments,
+        overview,
         setScore,
+        setStepComment,
+        setOverview,
         isStepComplete,
         isStepPartiallyComplete,
         getStepQuestions,

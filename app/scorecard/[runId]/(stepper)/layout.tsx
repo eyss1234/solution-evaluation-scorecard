@@ -45,16 +45,44 @@ export default async function StepperLayout({ children, params }: StepperLayoutP
     where: { runId },
   });
 
-  // Convert to Record<questionId, value>
+  // Convert to Record<questionId, value> and Record<questionId, comment>
   const initialScores = existingScores.reduce((acc, score) => {
     acc[score.questionId] = score.value;
     return acc;
   }, {} as Record<string, number>);
 
+  // Fetch existing overview for this run
+  const existingOverview = await prisma.scorecardOverview.findUnique({
+    where: { runId },
+  });
+
+  const initialOverview = {
+    pros: existingOverview?.pros || undefined,
+    cons: existingOverview?.cons || undefined,
+    summary: existingOverview?.summary || undefined,
+  };
+
+  // Fetch existing step comments for this run
+  const existingStepComments = await prisma.scorecardStepComment.findMany({
+    where: { runId },
+  });
+
+  const initialStepComments = existingStepComments.reduce((acc, stepComment) => {
+    acc[stepComment.stepNumber] = stepComment.comment;
+    return acc;
+  }, {} as Record<number, string>);
+
   console.log('[Layout] Loading scorecard:', { runId, scoresCount: existingScores.length, initialScores });
 
   return (
-    <ScorecardShell questions={questions} runId={runId} projectId={scorecardRun.projectId} initialScores={initialScores}>
+    <ScorecardShell 
+      questions={questions} 
+      runId={runId} 
+      projectId={scorecardRun.projectId} 
+      initialScores={initialScores}
+      initialStepComments={initialStepComments}
+      initialOverview={initialOverview}
+    >
       {children}
     </ScorecardShell>
   );

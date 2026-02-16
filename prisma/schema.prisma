@@ -80,9 +80,11 @@ model ScorecardRun {
   name      String?
   createdAt DateTime @default(now())
 
-  project        Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project        Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
   scores         ScorecardScore[]
   financialCosts FinancialCost[]
+  overview       ScorecardOverview?
+  stepComments   ScorecardStepComment[]
 
   @@map("scorecard_runs")
 }
@@ -99,6 +101,34 @@ model ScorecardScore {
 
   @@unique([runId, questionId])
   @@map("scorecard_scores")
+}
+
+model ScorecardOverview {
+  id        String   @id @default(cuid())
+  runId     String   @unique
+  pros      String?  // Optional pros summary
+  cons      String?  // Optional cons summary
+  summary   String?  // Optional overall summary
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  run ScorecardRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@map("scorecard_overviews")
+}
+
+model ScorecardStepComment {
+  id         String   @id @default(cuid())
+  runId      String
+  stepNumber Int      // Which step this comment is for
+  comment    String   // The step-level comment
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  run ScorecardRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, stepNumber])
+  @@map("scorecard_step_comments")
 }
 
 enum Currency {
