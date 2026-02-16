@@ -6,15 +6,22 @@ import { useRouter } from 'next/navigation';
 interface EditProjectNameProps {
   projectId: string;
   currentName: string;
+  editTriggerRef?: React.MutableRefObject<(() => void) | null>;
 }
 
-export function EditProjectName({ projectId, currentName }: EditProjectNameProps) {
+export function EditProjectName({ projectId, currentName, editTriggerRef }: EditProjectNameProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(currentName);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    if (editTriggerRef) {
+      editTriggerRef.current = () => setIsEditing(true);
+    }
+  }, [editTriggerRef]);
 
   useEffect(() => {
     if (isEditing && inputRef.current) {

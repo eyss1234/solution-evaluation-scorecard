@@ -8,8 +8,9 @@ import { formatDate } from '@/lib/format';
 import { calculateRunComparison, type ScorecardRunInput } from '@/domain/scorecard/compare';
 import { ScorecardComparison } from '@/components/ScorecardComparison';
 import { STEPS } from '@/lib/steps';
-import { EditProjectName } from '@/components/EditProjectName';
-import { DeleteProjectButton } from '@/components/DeleteProjectButton';
+import { ProjectHeader } from '@/components/ProjectHeader';
+import { ProjectActionsMenu } from '@/components/ProjectActionsMenu';
+import { ExportProjectPdfButton } from '@/components/ExportProjectPdfButton';
 import { ScorecardItem } from '@/components/ScorecardItem';
 import { FinancialComparison } from '@/components/FinancialComparison';
 import type { Currency } from '@/domain/financial/format';
@@ -113,14 +114,27 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             </svg>
             Back to Projects
           </Link>
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
-              <EditProjectName projectId={projectId} currentName={project.name} />
-              <p className="text-zinc-500 mt-2">Created {formatDate(project.createdAt)}</p>
-            </div>
-            <div className="flex flex-col gap-2">
-              <DeleteProjectButton projectId={projectId} projectName={project.name} />
-            </div>
+          <div className="flex items-start justify-between">
+            <ProjectHeader projectId={projectId} projectName={project.name} />
+            <ProjectActionsMenu projectId={projectId} projectName={project.name} />
+          </div>
+          <div className="flex items-center justify-between mt-2">
+            <p className="text-zinc-500">Created {formatDate(project.createdAt)}</p>
+            <ExportProjectPdfButton
+              projectName={project.name}
+              gatingAnswers={latestGatingRun?.answers.map(a => ({
+                question: a.question,
+                value: a.value,
+              }))}
+              scorecardRuns={project.scorecardRuns.map(run => ({
+                id: run.id,
+                name: run.name,
+                createdAt: run.createdAt,
+              }))}
+              comparisonData={comparisonData}
+              financialEntries={financialEntries}
+              currency={currency}
+            />
           </div>
         </div>
 
@@ -249,7 +263,6 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         {/* Financial Comparison Section */}
         {gatingStatus === 'passed' && (
           <Card>
-            <h2 className="text-xl font-semibold text-zinc-900 mb-4">Financial Comparison</h2>
             <FinancialComparison
               projectId={projectId}
               scorecardRuns={[...project.scorecardRuns].sort((a, b) => {
@@ -260,6 +273,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               })}
               initialEntries={financialEntries}
               initialCurrency={currency}
+              showTitle={true}
             />
           </Card>
         )}
