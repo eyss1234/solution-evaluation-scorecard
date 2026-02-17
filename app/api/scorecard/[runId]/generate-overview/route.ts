@@ -12,11 +12,17 @@ export async function POST(
   { params }: { params: Promise<{ runId: string }> }
 ) {
   try {
+    console.log('[Generate Overview] Starting request');
     const { runId } = await params;
+    console.log('[Generate Overview] RunId:', runId);
+    
     const body = await request.json();
+    console.log('[Generate Overview] Request body:', body);
+    
     const validation = generateSchema.safeParse(body);
 
     if (!validation.success) {
+      console.error('[Generate Overview] Validation failed:', validation.error);
       return NextResponse.json(
         {
           ok: false,
@@ -30,29 +36,59 @@ export async function POST(
     }
 
     const { type } = validation.data;
+    console.log('[Generate Overview] Type:', type);
 
     // Fetch scorecard data
-    const scorecardRun = await prisma.scorecardRun.findUnique({
-      where: { id: runId },
-      include: {
-        scores: {
-          include: {
-            question: true,
+    console.log('[Generate Overview] Fetching scorecard run from database');
+    console.log('[Generate Overview] Database URL configured:', !!process.env.DATABASE_URL);
+    
+    let scorecardRun;
+    try {
+      scorecardRun = await prisma.scorecardRun.findUnique({
+        where: { id: runId },
+        include: {
+          scores: {
+            include: {
+              question: true,
+            },
+            orderBy: [
+              { question: { stepNumber: 'asc' } },
+              { question: { order: 'asc' } },
+            ],
           },
-          orderBy: [
-            { question: { stepNumber: 'asc' } },
-            { question: { order: 'asc' } },
-          ],
         },
-      },
-    });
+      });
+      console.log('[Generate Overview] Database query completed, result:', !!scorecardRun);
+    } catch (dbError) {
+      console.error('[Generate Overview] Database error:', dbError);
+      return NextResponse.json(
+        { 
+          ok: false, 
+          error: { 
+            message: 'Database connection error',
+            details: dbError instanceof Error ? dbError.message : 'Unknown error'
+          } 
+        },
+        { status: 500 }
+      );
+    }
 
     if (!scorecardRun) {
+      console.error('[Generate Overview] Scorecard run not found:', runId);
+      console.log('[Generate Overview] Checking if any scorecard runs exist...');
+      try {
+        const count = await prisma.scorecardRun.count();
+        console.log('[Generate Overview] Total scorecard runs in database:', count);
+      } catch (e) {
+        console.error('[Generate Overview] Could not count runs:', e);
+      }
       return NextResponse.json(
         { ok: false, error: { message: 'Scorecard run not found' } },
         { status: 404 }
       );
     }
+    
+    console.log('[Generate Overview] Found scorecard run with', scorecardRun.scores.length, 'scores');
 
     // Prepare data for AI
     const scorecardData = STEPS.filter(step => step.questionsPerStep > 0).map((step) => {
@@ -99,8 +135,12 @@ Generate a 2-3 paragraph summary that includes:
     }
 
     // Call OpenAI API
+    console.log('[Generate Overview] Checking for OpenAI API key');
     const openaiApiKey = process.env.OPEN_AI_KEY;
+    console.log('[Generate Overview] API key exists:', !!openaiApiKey);
+    
     if (!openaiApiKey) {
+      console.error('[Generate Overview] OpenAI API key not configured');
       return NextResponse.json(
         {
           ok: false,
@@ -110,6 +150,7 @@ Generate a 2-3 paragraph summary that includes:
       );
     }
 
+    console.log('[Generate Overview] Calling OpenAI API with model: gpt-4o-mini');
     const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -133,13 +174,15 @@ Generate a 2-3 paragraph summary that includes:
       }),
     });
 
+    console.log('[Generate Overview] OpenAI response status:', openaiResponse.status);
+    
     if (!openaiResponse.ok) {
       const errorData = await openaiResponse.json();
-      console.error('OpenAI API error:', errorData);
+      console.error('[Generate Overview] OpenAI API error:', errorData);
       return NextResponse.json(
         {
           ok: false,
-          error: { message: 'Failed to generate content from AI' },
+          error: { message: 'Failed to generate content from AI', details: errorData },
         },
         { status: 500 }
       );
@@ -148,7 +191,7 @@ Generate a 2-3 paragraph summary that includes:
     const openaiData = await openaiResponse.json();
     const generatedText = openaiData.choices[0]?.message?.content || '';
 
-    console.log(`[Generate Overview API] Successfully generated ${type} for runId:`, runId);
+    console.log(`[Generate Overview] Successfully generated ${type} for runId:`, runId);
 
     return NextResponse.json({
       ok: true,
