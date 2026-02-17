@@ -124,21 +124,23 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           </div>
           <div className="flex items-center justify-between mt-2">
             <p className="text-zinc-500">Created {formatDate(project.createdAt)}</p>
-            <ExportProjectPdfButton
-              projectName={project.name}
-              gatingAnswers={latestGatingRun?.answers.map(a => ({
-                question: a.question,
-                value: a.value,
-              }))}
-              scorecardRuns={project.scorecardRuns.map(run => ({
-                id: run.id,
-                name: run.name,
-                createdAt: run.createdAt,
-              }))}
-              comparisonData={comparisonData}
-              financialEntries={financialEntries}
-              currency={currency}
-            />
+            {gatingStatus !== 'not_started' && (
+              <ExportProjectPdfButton
+                projectName={project.name}
+                gatingAnswers={latestGatingRun?.answers.map(a => ({
+                  question: a.question,
+                  value: a.value,
+                }))}
+                scorecardRuns={project.scorecardRuns.map(run => ({
+                  id: run.id,
+                  name: run.name,
+                  createdAt: run.createdAt,
+                }))}
+                comparisonData={comparisonData}
+                financialEntries={financialEntries}
+                currency={currency}
+              />
+            )}
           </div>
         </div>
 
