@@ -432,17 +432,11 @@ async function main() {
     });
   }
 
-  // Seed sample project (optional - for demo purposes)
-  await prisma.project.create({
-    data: {
-      name: 'Sample Project',
-    },
-  });
-
   console.log('Seeding completed successfully!');
   console.log('- Gate questions seeded');
   console.log('- Scorecard questions seeded');
-  console.log('- Sample project created');
+  console.log('');
+  console.log('To seed production demo data, run: npm run db:seed:prod');
 }
 
 main()
