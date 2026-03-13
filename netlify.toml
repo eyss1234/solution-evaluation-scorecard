@@ -2,6 +2,12 @@
   command = "npx prisma generate && npx prisma db push && npm run db:seed && npm run db:seed:prod && npm run build"
   publish = ".next"
 
+[context.branch-deploy]
+  ignore = "exit 0"
+
+[context.deploy-preview]
+  ignore = "exit 0"
+
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
